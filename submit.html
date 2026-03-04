@@ -1,0 +1,104 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Submit Project - Republic Economy Tracker</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+</head>
+<body class="bg-gray-50">
+  <div class="max-w-2xl mx-auto p-4">
+    <header class="flex items-center justify-between py-4">
+      <h1 class="text-2xl font-bold">Submit a Project</h1>
+      <a href="index.html" class="text-sm underline">Back</a>
+    </header>
+
+    <form id="form" class="grid gap-4 rounded-xl border bg-white p-4">
+      <input name="name" class="rounded-lg border px-3 py-2 text-sm" placeholder="Project name" required />
+      <input name="short_description" class="rounded-lg border px-3 py-2 text-sm" placeholder="Short description (1 line)" required />
+      <textarea name="description" class="rounded-lg border px-3 py-2 text-sm" rows="5" placeholder="Long description (optional)"></textarea>
+
+      <select name="category" class="rounded-lg border px-3 py-2 text-sm" required>
+        <option value="">Select category</option>
+        <option>DeFi</option>
+        <option>AI Agents</option>
+        <option>Model Hosting</option>
+        <option>Inference</option>
+        <option>Data Marketplaces</option>
+        <option>Research Labs</option>
+        <option>Developer Tooling</option>
+        <option>Infrastructure</option>
+      </select>
+
+      <input name="tags" class="rounded-lg border px-3 py-2 text-sm" placeholder="Tags (comma separated) e.g. open-source, sdk" />
+      <input name="website" class="rounded-lg border px-3 py-2 text-sm" placeholder="Website URL" />
+      <input name="github" class="rounded-lg border px-3 py-2 text-sm" placeholder="GitHub URL" />
+      <input name="twitter" class="rounded-lg border px-3 py-2 text-sm" placeholder="Twitter/X URL" />
+      <input name="discord" class="rounded-lg border px-3 py-2 text-sm" placeholder="Discord invite URL" />
+
+      <button id="btn" class="rounded-lg bg-black text-white px-4 py-2 text-sm">
+        Submit (Pending Review)
+      </button>
+
+      <div id="msg" class="text-sm"></div>
+    </form>
+  </div>
+
+  <script>
+    const SUPABASE_URL = "PASTE_SUPABASE_URL";
+    const SUPABASE_ANON_KEY = "PASTE_SUPABASE_ANON_KEY";
+
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    const form = document.getElementById("form");
+    const msg = document.getElementById("msg");
+    const btn = document.getElementById("btn");
+
+    function slugify(str) {
+      return str.toLowerCase().trim()
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/(^-|-$)+/g, "");
+    }
+
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      msg.textContent = "";
+      btn.disabled = true;
+      btn.classList.add("opacity-60");
+
+      const fd = new FormData(form);
+      const name = (fd.get("name") || "").trim();
+
+      const payload = {
+        name,
+        slug: slugify(name),
+        short_description: (fd.get("short_description") || "").trim(),
+        description: (fd.get("description") || "").trim(),
+        category: fd.get("category"),
+        tags: (fd.get("tags") || "")
+          .split(",")
+          .map(t => t.trim())
+          .filter(Boolean),
+        website: (fd.get("website") || "").trim() || null,
+        github: (fd.get("github") || "").trim() || null,
+        twitter: (fd.get("twitter") || "").trim() || null,
+        discord: (fd.get("discord") || "").trim() || null,
+        status: "pending"
+      };
+
+      try {
+        const { error } = await supabase.from("projects").insert([payload]);
+        if (error) throw error;
+        msg.textContent = "Submitted! Your project is pending approval.";
+        form.reset();
+      } catch (err) {
+        msg.textContent = err.message || "Failed to submit.";
+      } finally {
+        btn.disabled = false;
+        btn.classList.remove("opacity-60");
+      }
+    });
+  </script>
+</body>
+</html>
