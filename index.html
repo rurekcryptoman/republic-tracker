@@ -3,98 +3,949 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Republic Economy Tracker</title>
+  <title>Projects — Republic Tracker</title>
 
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <style>
+    :root{
+      --bg0:#06060a;
+      --bg1:#070a10;
+      --card: rgba(255,255,255,0.06);
+      --border: rgba(255,255,255,0.15);
+      --text:#ffffff;
+      --muted: rgba(255,255,255,0.85);
+      --muted2: rgba(255,255,255,0.65);
+      --neon:#3DFF8C;
+      --neon2:#18C964;
+      --danger:#ff6b6b;
+      --ok:#39d98a;
+    }
+
+    html,body{height:100%}
+
+    body{
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(900px 520px at 70% 10%, rgba(61,255,140,0.12), transparent 55%),
+        radial-gradient(900px 520px at 20% 25%, rgba(24,201,100,0.10), transparent 60%),
+        radial-gradient(900px 520px at 50% 95%, rgba(61,255,140,0.08), transparent 60%),
+        linear-gradient(180deg, var(--bg0), var(--bg1) 70%, var(--bg0));
+      background-attachment: fixed;
+      overflow-x:hidden;
+      position: relative;
+    }
+
+    body::before{
+      content:"";
+      position:fixed;
+      inset:-40%;
+      z-index:-1;
+      pointer-events:none;
+      background:
+        radial-gradient(circle at 20% 30%, rgba(61,255,140,0.15), transparent 35%),
+        radial-gradient(circle at 80% 70%, rgba(24,201,100,0.12), transparent 40%);
+      filter: blur(120px);
+      animation: glowMove 18s linear infinite;
+    }
+
+    @keyframes glowMove{
+      0%{ transform: translate(0,0); }
+      50%{ transform: translate(-8%,6%); }
+      100%{ transform: translate(0,0); }
+    }
+
+    .glass{
+      background: var(--card);
+      border:1px solid var(--border);
+      backdrop-filter: blur(10px);
+      box-shadow:0 18px 60px rgba(0,0,0,0.55);
+      transition: transform .18s, border-color .18s, box-shadow .18s, background .18s;
+    }
+
+    .glass:hover{
+      border-color: rgba(61,255,140,0.20);
+      box-shadow:
+        0 0 18px rgba(61,255,140,0.07),
+        0 18px 60px rgba(0,0,0,0.58);
+    }
+
+    .label{
+      font-size:12px;
+      letter-spacing:.12em;
+      text-transform:uppercase;
+      color:var(--muted);
+      font-weight:600;
+    }
+
+    .hint{
+      font-size:12px;
+      color:var(--muted2);
+    }
+
+    .pill{
+      border:1px solid rgba(255,255,255,0.15);
+      background:rgba(255,255,255,0.05);
+      color: rgba(255,255,255,0.92);
+    }
+
+    .btn{
+      background:linear-gradient(90deg,#3DFF8C,#18C964);
+      color:#000;
+      border:1px solid rgba(255,255,255,0.12);
+      box-shadow:0 8px 30px rgba(61,255,140,0.16);
+      transition:.18s ease;
+    }
+
+    .btn:hover{
+      filter:brightness(1.08);
+      box-shadow:
+        0 0 14px rgba(61,255,140,0.22),
+        0 10px 35px rgba(61,255,140,0.25);
+      transform: translateY(-1px);
+    }
+
+    .btn:active{
+      transform: translateY(1px);
+    }
+
+    .field{
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.15);
+      color: var(--text);
+      transition: border-color .18s, box-shadow .18s, background .18s;
+    }
+
+    .field::placeholder{
+      color: rgba(255,255,255,0.42);
+    }
+
+    .field:hover{
+      background: rgba(255,255,255,0.06);
+      border-color: rgba(255,255,255,0.20);
+    }
+
+    .field:focus{
+      outline: none;
+      border-color: rgba(61,255,140,0.55);
+      box-shadow: 0 0 0 4px rgba(61,255,140,0.10);
+      background: rgba(255,255,255,0.07);
+    }
+
+    .brand-logo-icon{
+      height: 96px;
+      width: 96px;
+      object-fit: contain;
+      border-radius: 20px;
+      flex-shrink: 0;
+      filter:
+        drop-shadow(0 0 10px rgba(61,255,140,0.35))
+        drop-shadow(0 0 24px rgba(61,255,140,0.25))
+        drop-shadow(0 0 40px rgba(61,255,140,0.15));
+      animation: logoPulse 4s ease-in-out infinite;
+    }
+
+    @keyframes logoPulse{
+      0%{
+        transform: scale(1);
+        filter:
+          drop-shadow(0 0 10px rgba(61,255,140,0.28))
+          drop-shadow(0 0 24px rgba(61,255,140,0.18))
+          drop-shadow(0 0 40px rgba(61,255,140,0.10));
+      }
+      50%{
+        transform: scale(1.03);
+        filter:
+          drop-shadow(0 0 14px rgba(61,255,140,0.40))
+          drop-shadow(0 0 30px rgba(61,255,140,0.26))
+          drop-shadow(0 0 48px rgba(61,255,140,0.16));
+      }
+      100%{
+        transform: scale(1);
+        filter:
+          drop-shadow(0 0 10px rgba(61,255,140,0.28))
+          drop-shadow(0 0 24px rgba(61,255,140,0.18))
+          drop-shadow(0 0 40px rgba(61,255,140,0.10));
+      }
+    }
+
+    .brand-title{
+      color:#ffffff;
+      letter-spacing:-0.02em;
+      text-shadow:
+        0 0 8px rgba(255,255,255,0.10),
+        0 0 22px rgba(61,255,140,0.14);
+    }
+
+    .brand-subtitle{
+      color: rgba(255,255,255,0.68);
+      letter-spacing: .06em;
+    }
+
+    .nav-link-pro{
+      color: rgba(255,255,255,0.84);
+      transition: all .18s ease;
+    }
+
+    .nav-link-pro:hover{
+      color: #ffffff;
+      background: rgba(255,255,255,0.05);
+      box-shadow: 0 0 12px rgba(61,255,140,0.06);
+    }
+
+    .card{
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.15);
+      backdrop-filter: blur(10px);
+      box-shadow: 0 18px 60px rgba(0,0,0,0.45);
+      transition: transform .18s, border-color .18s, background .18s, box-shadow .18s;
+    }
+
+    .card:hover{
+      transform: translateY(-2px);
+      border-color: rgba(61,255,140,0.35);
+      background: rgba(255,255,255,0.08);
+      box-shadow:
+        0 0 10px rgba(61,255,140,0.18),
+        0 18px 60px rgba(0,0,0,0.50);
+    }
+
+    .logoWrap{
+      background: rgba(0,0,0,0.35);
+      border: 1px solid rgba(255,255,255,0.12);
+    }
+
+    .menu-item{
+      padding: 10px 12px;
+      font-size: 14px;
+      color: rgba(255,255,255,0.92);
+      border-top: 1px solid rgba(255,255,255,0.06);
+      background: transparent;
+      transition: background .16s, border-color .16s;
+    }
+
+    .menu-item:hover{
+      background: rgba(61,255,140,0.12);
+    }
+
+    .menu-item.active{
+      background: rgba(61,255,140,0.18);
+      border-left: 3px solid var(--neon);
+    }
+
+    .glow-title{
+      text-shadow:
+        0 0 4px rgba(61,255,140,0.45),
+        0 0 10px rgba(61,255,140,0.28);
+    }
+
+    .skeleton{
+      background: linear-gradient(90deg, rgba(255,255,255,0.04), rgba(255,255,255,0.08), rgba(255,255,255,0.04));
+      background-size: 200% 100%;
+      animation: shimmer 1.2s infinite;
+    }
+
+    @keyframes shimmer{
+      0%{background-position: 200% 0;}
+      100%{background-position: -200% 0;}
+    }
+
+    #catMenu{
+      position: fixed;
+      z-index: 999999;
+      width: 320px;
+      border-radius: 14px;
+      overflow: hidden;
+      display: none;
+      background: rgba(10,12,16,0.92);
+      border: 1px solid rgba(255,255,255,0.12);
+      backdrop-filter: blur(12px);
+      box-shadow:
+        0 0 20px rgba(61,255,140,0.08),
+        0 22px 70px rgba(0,0,0,0.65);
+    }
+
+    #catMenu.open{ display: block; }
+
+    #catMenuInner{
+      max-height: 280px;
+      overflow-y: auto;
+    }
+
+    #catMenuInner::-webkit-scrollbar{ width: 10px; }
+    #catMenuInner::-webkit-scrollbar-thumb{
+      background: rgba(255,255,255,0.12);
+      border-radius: 999px;
+    }
+    #catMenuInner::-webkit-scrollbar-track{
+      background: rgba(255,255,255,0.04);
+    }
+
+    .wallet-menu{
+      position: fixed;
+      z-index: 1000000;
+      min-width: 220px;
+      display: none;
+      background: rgba(10,12,16,0.96);
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 14px;
+      backdrop-filter: blur(12px);
+      box-shadow:
+        0 0 20px rgba(61,255,140,0.08),
+        0 22px 70px rgba(0,0,0,0.65);
+      overflow: hidden;
+    }
+
+    .wallet-menu.open{
+      display:block;
+    }
+
+    .wallet-item{
+      width:100%;
+      text-align:left;
+      padding:12px 14px;
+      font-size:14px;
+      color:rgba(255,255,255,0.92);
+      background:transparent;
+      border-top:1px solid rgba(255,255,255,0.06);
+      transition: background .16s ease;
+    }
+
+    .wallet-item:hover{
+      background:rgba(61,255,140,0.12);
+    }
+
+    .wallet-head{
+      padding:12px 14px;
+      font-size:12px;
+      color:var(--muted2);
+      background:rgba(255,255,255,0.03);
+    }
+
+    @media (max-width: 640px){
+      .brand-logo-icon{
+        height:70px;
+        width:70px;
+      }
+    }
+  </style>
 </head>
 
-<body class="bg-gray-50">
-  <div class="max-w-4xl mx-auto p-6">
-    <div class="flex items-center justify-between gap-4">
-      <h1 class="text-3xl font-bold">Republic Economy Tracker</h1>
-      <a href="submit.html" class="text-sm text-blue-600 underline">Submit a Project</a>
+<body>
+  <div class="max-w-6xl mx-auto px-4 py-6">
+
+    <header class="flex items-center justify-between py-2">
+      <div class="flex items-center gap-4">
+        <img
+          src="logo-icon.png"
+          alt="Republic Tracker logo"
+          class="brand-logo-icon"
+        />
+
+        <div class="leading-tight">
+          <div class="brand-title text-2xl md:text-3xl font-extrabold tracking-tight">
+            Republic Tracker
+          </div>
+          <div class="brand-subtitle text-[11px] md:text-xs font-medium uppercase mt-1">
+            Republic Ecosystem Intelligence
+          </div>
+        </div>
+      </div>
+
+      <nav class="flex items-center gap-2 md:gap-3 text-sm">
+        <a href="home.html" class="nav-link-pro rounded-xl px-4 py-2.5 font-medium">
+          Dashboard
+        </a>
+
+        <a href="submit.html" class="nav-link-pro rounded-xl px-4 py-2.5 font-medium">
+          Submit
+        </a>
+
+        <button id="connectBtn" class="btn rounded-xl px-5 py-2.5 text-sm font-semibold">
+          Connect Wallet
+        </button>
+      </nav>
+    </header>
+
+    <section class="mt-6 glass rounded-2xl p-6 md:p-8">
+      <div class="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
+        <div>
+          <div class="label">Projects</div>
+          <h1 class="mt-2 text-xl md:text-2xl font-bold tracking-tight glow-title">
+            Discover what’s building on Republic
+          </h1>
+          <p class="mt-2 text-sm md:text-base" style="color: var(--muted); max-width: 70ch;">
+            Browse approved projects in the ecosystem directory. Filter by category, search by name or description, and open a project page to learn more.
+          </p>
+        </div>
+
+        <a href="submit.html" class="btn rounded-xl px-4 py-3 text-sm font-semibold text-center">
+          + Submit a project
+        </a>
+      </div>
+
+      <div class="mt-5 grid gap-3 md:grid-cols-12">
+        <div class="md:col-span-7">
+          <input id="q" class="field w-full rounded-xl px-4 py-3 text-sm"
+                 placeholder="Search projects (name or description)…" />
+          <div class="hint mt-1">Tip: press <b>/</b> to focus search.</div>
+        </div>
+
+        <div class="md:col-span-3">
+          <button type="button" id="catBtn"
+                  class="field w-full rounded-xl px-4 py-3 text-sm text-left flex items-center justify-between">
+            <span id="catLabel" class="text-white/70">All categories</span>
+            <span class="text-white/60">▾</span>
+          </button>
+          <input type="hidden" id="catValue" value="">
+        </div>
+
+        <div class="md:col-span-2">
+          <select id="sort" class="field w-full rounded-xl px-4 py-3 text-sm">
+            <option value="new">Newest</option>
+            <option value="name">Name (A–Z)</option>
+          </select>
+          <div class="hint mt-1">Sorting applies to results.</div>
+        </div>
+      </div>
+
+      <div class="mt-4 flex flex-wrap items-center justify-between gap-2">
+        <div id="summary" class="text-sm" style="color: var(--muted);">Loading…</div>
+
+        <div class="flex items-center gap-2">
+          <button id="clearBtn" type="button" class="pill rounded-xl px-3 py-2 text-xs hover:bg-white/10 transition">
+            Clear filters
+          </button>
+          <span id="badge" class="hidden pill rounded-full px-3 py-1 text-xs"></span>
+        </div>
+      </div>
+    </section>
+
+    <section class="mt-6">
+      <div id="grid" class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3"></div>
+
+      <div id="empty" class="hidden mt-8 glass rounded-2xl p-8 text-center">
+        <div class="text-lg font-semibold">No projects found</div>
+        <div class="mt-2 text-sm" style="color: var(--muted);">Try a different search term or clear filters.</div>
+      </div>
+
+      <div id="err" class="mt-4 text-sm" style="color: var(--danger);"></div>
+    </section>
+
+    <footer class="mt-10 pb-10 text-xs" style="color: var(--muted2);">
+      Built with Supabase + static HTML. Approved projects only.
+    </footer>
+  </div>
+
+  <div id="catMenu" aria-hidden="true">
+    <div id="catMenuInner"></div>
+  </div>
+
+  <div id="walletMenu" class="wallet-menu" aria-hidden="true">
+    <div class="wallet-head">
+      Connected wallet
+      <div id="walletMenuAddress" class="mt-1 text-white text-sm break-all"></div>
     </div>
-
-    <div id="status" class="mt-4 text-sm text-gray-600"></div>
-
-    <div id="projects" class="grid gap-4 mt-6 sm:grid-cols-2"></div>
+    <button id="copyWalletBtn" type="button" class="wallet-item">Copy address</button>
+    <button id="disconnectWalletBtn" type="button" class="wallet-item">Disconnect wallet</button>
   </div>
 
   <script>
-    // Your Supabase credentials (Publishable key = old "anon" key)
+    const CHAIN_ID = "raitestnet_77701-1";
+    const WALLET_STORAGE_KEY = "republic_tracker_wallet_address";
+
+    const connectBtn = document.getElementById("connectBtn");
+    const walletMenu = document.getElementById("walletMenu");
+    const walletMenuAddress = document.getElementById("walletMenuAddress");
+    const copyWalletBtn = document.getElementById("copyWalletBtn");
+    const disconnectWalletBtn = document.getElementById("disconnectWalletBtn");
+
+    let connectedAddress = null;
+    let walletWatcherAttached = false;
+
+    function shortAddress(address = ""){
+      if (!address) return "Connect Wallet";
+      return `${address.slice(0,6)}...${address.slice(-4)}`;
+    }
+
+    function saveWalletAddress(address){
+      if (!address) {
+        localStorage.removeItem(WALLET_STORAGE_KEY);
+        return;
+      }
+      localStorage.setItem(WALLET_STORAGE_KEY, address);
+    }
+
+    function getSavedWalletAddress(){
+      return localStorage.getItem(WALLET_STORAGE_KEY) || "";
+    }
+
+    function setWalletConnectedUI(address){
+      connectedAddress = address;
+      connectBtn.textContent = shortAddress(address);
+      walletMenuAddress.textContent = address;
+      saveWalletAddress(address);
+    }
+
+    function setWalletDisconnectedUI(){
+      connectedAddress = null;
+      connectBtn.textContent = "Connect Wallet";
+      walletMenuAddress.textContent = "";
+      saveWalletAddress("");
+      closeWalletMenu();
+    }
+
+    async function getCurrentKeplrAddress(){
+      if(!window.keplr) return "";
+      const signer = window.getOfflineSigner(CHAIN_ID);
+      const accounts = await signer.getAccounts();
+      return accounts?.[0]?.address || "";
+    }
+
+    async function connectWallet(){
+      if(!window.keplr){
+        alert("Install Keplr wallet");
+        window.open("https://www.keplr.app/","_blank");
+        return;
+      }
+
+      try{
+        await window.keplr.enable(CHAIN_ID);
+        const address = await getCurrentKeplrAddress();
+
+        if(!address){
+          throw new Error("No wallet address found.");
+        }
+
+        setWalletConnectedUI(address);
+        attachWalletWatcher();
+      }catch(e){
+        alert("Wallet connection failed");
+      }
+    }
+
+    function disconnectWallet(){
+      setWalletDisconnectedUI();
+    }
+
+    async function tryAutoReconnect(){
+      const saved = getSavedWalletAddress();
+      if(!saved || !window.keplr) return;
+
+      try{
+        await window.keplr.enable(CHAIN_ID);
+        const current = await getCurrentKeplrAddress();
+
+        if(!current) {
+          setWalletDisconnectedUI();
+          return;
+        }
+
+        if(current !== saved){
+          setWalletDisconnectedUI();
+          alert("Connected wallet has changed. Please reconnect your wallet again.");
+          return;
+        }
+
+        setWalletConnectedUI(current);
+        attachWalletWatcher();
+      }catch(_){
+        setWalletDisconnectedUI();
+      }
+    }
+
+    function openWalletMenu(){
+      if(!connectedAddress) return;
+      const rect = connectBtn.getBoundingClientRect();
+      walletMenu.style.left = `${rect.left}px`;
+      walletMenu.style.top = `${rect.bottom + 8}px`;
+      walletMenu.classList.add("open");
+      walletMenu.setAttribute("aria-hidden", "false");
+    }
+
+    function closeWalletMenu(){
+      walletMenu.classList.remove("open");
+      walletMenu.setAttribute("aria-hidden", "true");
+    }
+
+    async function handleWalletButtonClick(e){
+      e.stopPropagation();
+
+      if(!connectedAddress){
+        await connectWallet();
+        return;
+      }
+
+      if(walletMenu.classList.contains("open")) closeWalletMenu();
+      else openWalletMenu();
+    }
+
+    async function copyWalletAddress(){
+      if(!connectedAddress) return;
+
+      try{
+        await navigator.clipboard.writeText(connectedAddress);
+      }catch(_){
+        alert("Could not copy wallet address.");
+      }
+      closeWalletMenu();
+    }
+
+    function attachWalletWatcher(){
+      if(walletWatcherAttached || !window.keplr) return;
+
+      window.addEventListener("keplr_keystorechange", async () => {
+        if(!connectedAddress) return;
+
+        try{
+          const current = await getCurrentKeplrAddress();
+
+          if(!current || current !== connectedAddress){
+            const oldAddress = connectedAddress;
+            setWalletDisconnectedUI();
+            if(oldAddress){
+              alert("Connected wallet has changed. Please reconnect your wallet again.");
+            }
+          }
+        }catch(_){
+          setWalletDisconnectedUI();
+          alert("Wallet state changed. Please reconnect your wallet again.");
+        }
+      });
+
+      walletWatcherAttached = true;
+    }
+
+    connectBtn.addEventListener("click", handleWalletButtonClick);
+    copyWalletBtn.addEventListener("click", copyWalletAddress);
+    disconnectWalletBtn.addEventListener("click", disconnectWallet);
+
+    window.addEventListener("resize", () => {
+      if(walletMenu.classList.contains("open")) openWalletMenu();
+    });
+
+    window.addEventListener("scroll", () => {
+      if(walletMenu.classList.contains("open")) openWalletMenu();
+    }, true);
+
+    document.addEventListener("click", (e) => {
+      if(walletMenu.classList.contains("open") && !walletMenu.contains(e.target) && !connectBtn.contains(e.target)){
+        closeWalletMenu();
+      }
+    });
+
     const SUPABASE_URL = "https://ozafpxboemvvkotwgxoy.supabase.co";
-    const SUPABASE_ANON_KEY = "sb_publishable_h-9NYJmjFh8oeMmlK6kPhA_L5zQZRKT";
+    const SUPABASE_KEY = "sb_publishable_h-9NYJmjFh8oeMmlK6kPhA_L5zQZRKT";
+    const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-    const client = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    const grid = document.getElementById("grid");
+    const empty = document.getElementById("empty");
+    const err = document.getElementById("err");
+    const summary = document.getElementById("summary");
 
-    const statusEl = document.getElementById("status");
-    const container = document.getElementById("projects");
+    const qEl = document.getElementById("q");
+    const sortEl = document.getElementById("sort");
+
+    const catBtn = document.getElementById("catBtn");
+    const catMenu = document.getElementById("catMenu");
+    const catMenuInner = document.getElementById("catMenuInner");
+    const catLabel = document.getElementById("catLabel");
+    const catValue = document.getElementById("catValue");
+
+    const badge = document.getElementById("badge");
+    const clearBtn = document.getElementById("clearBtn");
+
+    const categories = [
+      { label: "All categories", value: "", icon: "✨" },
+      { label: "DeFi", value: "DeFi", icon: "💰" },
+      { label: "AI Agents", value: "AI Agents", icon: "🤖" },
+      { label: "Model Hosting", value: "Model Hosting", icon: "🧠" },
+      { label: "Inference", value: "Inference", icon: "⚡" },
+      { label: "Data Marketplaces", value: "Data Marketplaces", icon: "📊" },
+      { label: "Research Labs", value: "Research Labs", icon: "🧪" },
+      { label: "Developer Tooling", value: "Developer Tooling", icon: "🛠️" },
+      { label: "Infrastructure", value: "Infrastructure", icon: "🧱" }
+    ];
 
     function escapeHtml(str = "") {
-      return String(str).replace(/[&<>"']/g, m => ({
+      return String(str).replace(/[&<>"']/g, (m) => ({
         "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
       }[m]));
     }
 
-    function renderProjectCard(p) {
-      const website = p.website ? `<a class="text-sm underline" target="_blank" rel="noreferrer" href="${p.website}">Website</a>` : "";
-      const github  = p.github  ? `<a class="text-sm underline" target="_blank" rel="noreferrer" href="${p.github}">GitHub</a>` : "";
-      const twitter = p.twitter ? `<a class="text-sm underline" target="_blank" rel="noreferrer" href="${p.twitter}">Twitter/X</a>` : "";
-      const discord = p.discord ? `<a class="text-sm underline" target="_blank" rel="noreferrer" href="${p.discord}">Discord</a>` : "";
+    function safeUrl(u) {
+      if (!u) return "";
+      const s = String(u).trim();
+      if (!/^https?:\/\//i.test(s)) return "";
+      return s;
+    }
 
-      const links = [website, github, twitter, discord].filter(Boolean).join(" · ");
+    function renderSkeletons() {
+      grid.innerHTML = Array.from({length: 6}).map(() => `
+        <div class="card rounded-2xl p-5">
+          <div class="flex items-start gap-4">
+            <div class="logoWrap rounded-xl w-14 h-14 skeleton"></div>
+            <div class="flex-1">
+              <div class="h-3 w-24 rounded skeleton"></div>
+              <div class="mt-3 h-5 w-40 rounded skeleton"></div>
+              <div class="mt-3 h-3 w-full rounded skeleton"></div>
+              <div class="mt-2 h-3 w-4/5 rounded skeleton"></div>
+            </div>
+          </div>
+        </div>
+      `).join("");
+    }
+
+    function card(p) {
+      const logo = safeUrl(p.logo_url) || "https://placehold.co/56x56?text=R";
+      const cat = escapeHtml(p.category || "Uncategorized");
+      const name = escapeHtml(p.name || "");
+      const desc = escapeHtml(p.short_description || "");
 
       return `
-        <div class="bg-white p-4 rounded-xl border">
-          <div class="text-xs text-gray-500">${escapeHtml(p.category || "")}</div>
-          <h2 class="font-semibold text-lg mt-1">${escapeHtml(p.name || "")}</h2>
-          <p class="text-sm text-gray-600 mt-1">${escapeHtml(p.short_description || "")}</p>
-          ${links ? `<div class="mt-3 text-sm text-gray-700">${links}</div>` : ""}
-        </div>
+        <a href="project.html?slug=${encodeURIComponent(p.slug)}" class="card rounded-2xl p-5 block">
+          <div class="flex items-start gap-4">
+            <div class="logoWrap rounded-xl w-14 h-14 overflow-hidden grid place-items-center">
+              <img src="${logo}" class="w-full h-full object-cover" alt="">
+            </div>
+
+            <div class="min-w-0 flex-1">
+              <div class="text-xs" style="color: var(--muted2);">${cat}</div>
+              <div class="mt-1 text-lg font-bold truncate">${name}</div>
+              <div class="mt-2 text-sm leading-relaxed" style="color: var(--muted);">${desc}</div>
+
+              <div class="mt-4 flex items-center justify-between">
+                <span class="pill rounded-full px-3 py-1 text-xs" style="color: var(--muted);">
+                  View details →
+                </span>
+                <span class="text-xs" style="color: var(--muted2);">
+                  ${p.created_at ? new Date(p.created_at).toLocaleDateString() : ""}
+                </span>
+              </div>
+            </div>
+          </div>
+        </a>
       `;
     }
 
-    async function loadProjects() {
-      statusEl.textContent = "Loading approved projects...";
-      container.innerHTML = "";
+    function setBadge() {
+      const c = catValue.value;
+      const q = qEl.value.trim();
+      const parts = [];
 
-      const { data, error } = await client
-        .from("projects")
-        .select("name,short_description,category,website,github,twitter,discord,status,created_at")
-        .order("created_at", { ascending: false });
+      if (c) parts.push(c);
+      if (q) parts.push(`“${q}”`);
 
-      // Debug info in console (helpful)
-      console.log("Supabase data:", data);
-      console.log("Supabase error:", error);
-
-      if (error) {
-        statusEl.textContent = "Error loading projects.";
-        container.innerHTML = `<pre class="text-xs text-red-600 whitespace-pre-wrap">${escapeHtml(error.message)}</pre>`;
+      if (!parts.length) {
+        badge.classList.add("hidden");
+        badge.textContent = "";
         return;
       }
 
-      const rows = data || [];
-
-      if (rows.length === 0) {
-        statusEl.textContent = "No approved projects yet.";
-        container.innerHTML = `
-          <div class="text-sm text-gray-500">
-            Nothing to show right now. This usually means:
-            <ul class="list-disc ml-5 mt-2">
-              <li>You haven't approved any projects yet (status must be <b>approved</b>).</li>
-              <li>RLS policy is set to only show approved rows.</li>
-            </ul>
-          </div>
-        `;
-        return;
-      }
-
-      statusEl.textContent = `Showing ${rows.length} approved projects`;
-      container.innerHTML = rows.map(renderProjectCard).join("");
+      badge.classList.remove("hidden");
+      badge.textContent = parts.join(" · ");
     }
 
-    loadProjects();
+    function renderCategoryMenu() {
+      catMenuInner.innerHTML = categories.map((c) => `
+        <button type="button" class="menu-item w-full text-left" data-val="${c.value}">
+          <span class="mr-2">${c.icon}</span>${c.label}
+        </button>
+      `).join("");
+
+      catMenuInner.querySelectorAll("[data-val]").forEach(btn => {
+        btn.addEventListener("click", () => {
+          const val = btn.getAttribute("data-val") || "";
+          const item = categories.find(x => x.value === val) || categories[0];
+
+          catValue.value = val;
+          catLabel.innerHTML = `<span class="mr-2">${item.icon}</span>${item.label}`;
+          catLabel.className = val ? "text-white" : "text-white/70";
+
+          catMenuInner.querySelectorAll(".menu-item").forEach(x => x.classList.remove("active"));
+          btn.classList.add("active");
+
+          closeCatMenu();
+          syncUrlFromUi();
+          applyFilters();
+        });
+      });
+    }
+
+    function openCatMenu() {
+      const rect = catBtn.getBoundingClientRect();
+      catMenu.style.width = rect.width + "px";
+      catMenu.style.left = rect.left + "px";
+      catMenu.style.top = (rect.bottom + 8) + "px";
+      catMenu.classList.add("open");
+      catMenu.setAttribute("aria-hidden", "false");
+    }
+
+    function closeCatMenu() {
+      catMenu.classList.remove("open");
+      catMenu.setAttribute("aria-hidden", "true");
+    }
+
+    catBtn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      if (catMenu.classList.contains("open")) closeCatMenu();
+      else openCatMenu();
+    });
+
+    window.addEventListener("scroll", () => {
+      if (catMenu.classList.contains("open")) openCatMenu();
+    }, true);
+
+    window.addEventListener("resize", () => {
+      if (catMenu.classList.contains("open")) openCatMenu();
+    });
+
+    document.addEventListener("click", (e) => {
+      if (!catMenu.contains(e.target) && !catBtn.contains(e.target)) {
+        closeCatMenu();
+      }
+    });
+
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") closeCatMenu();
+    });
+
+    let ALL = [];
+
+    function readUrlToUi() {
+      const params = new URLSearchParams(window.location.search);
+      const category = params.get("category") || "";
+      const q = params.get("q") || "";
+      const sort = params.get("sort") || "new";
+
+      catValue.value = category;
+      qEl.value = q;
+      sortEl.value = sort;
+
+      const item = categories.find(x => x.value === category) || categories[0];
+      catLabel.innerHTML = `<span class="mr-2">${item.icon}</span>${item.label}`;
+      catLabel.className = category ? "text-white" : "text-white/70";
+    }
+
+    function syncUrlFromUi() {
+      const params = new URLSearchParams();
+      const category = catValue.value;
+      const q = qEl.value.trim();
+      const sort = sortEl.value;
+
+      if (category) params.set("category", category);
+      if (q) params.set("q", q);
+      if (sort && sort !== "new") params.set("sort", sort);
+
+      const newUrl = `${window.location.pathname}${params.toString() ? "?" + params.toString() : ""}`;
+      window.history.replaceState({}, "", newUrl);
+    }
+
+    function sortProjects(list) {
+      const s = sortEl.value;
+      if (s === "name") {
+        return list.slice().sort((a,b) => String(a.name||"").localeCompare(String(b.name||"")));
+      }
+      return list.slice().sort((a,b) => Date.parse(b.created_at||0) - Date.parse(a.created_at||0));
+    }
+
+    function applyFilters() {
+      err.textContent = "";
+      setBadge();
+
+      const q = qEl.value.trim().toLowerCase();
+      const c = catValue.value;
+      let filtered = ALL;
+
+      if (c) {
+        filtered = filtered.filter(p => (p.category || "") === c);
+      }
+
+      if (q) {
+        filtered = filtered.filter(p => {
+          const name = String(p.name || "").toLowerCase();
+          const desc = String(p.short_description || "").toLowerCase();
+          return name.includes(q) || desc.includes(q);
+        });
+      }
+
+      filtered = sortProjects(filtered);
+
+      summary.textContent = `Showing ${filtered.length} / ${ALL.length} approved projects`;
+      grid.innerHTML = filtered.map(card).join("");
+
+      empty.classList.toggle("hidden", filtered.length !== 0);
+      if (filtered.length === 0) grid.innerHTML = "";
+    }
+
+    async function load() {
+      renderSkeletons();
+      summary.textContent = "Loading projects…";
+
+      try {
+        const { data, error } = await sb
+          .from("projects")
+          .select("slug,name,short_description,category,logo_url,created_at,status")
+          .eq("status", "approved")
+          .order("created_at", { ascending: false });
+
+        if (error) throw error;
+
+        ALL = data || [];
+        applyFilters();
+      } catch (e) {
+        grid.innerHTML = "";
+        summary.textContent = "";
+        err.textContent = e?.message || String(e);
+      }
+    }
+
+    let t = null;
+    qEl.addEventListener("input", () => {
+      clearTimeout(t);
+      t = setTimeout(() => {
+        syncUrlFromUi();
+        applyFilters();
+      }, 150);
+    });
+
+    sortEl.addEventListener("change", () => {
+      syncUrlFromUi();
+      applyFilters();
+    });
+
+    clearBtn.addEventListener("click", () => {
+      qEl.value = "";
+      catValue.value = "";
+      sortEl.value = "new";
+
+      const item = categories[0];
+      catLabel.innerHTML = `<span class="mr-2">${item.icon}</span>${item.label}`;
+      catLabel.className = "text-white/70";
+
+      syncUrlFromUi();
+      applyFilters();
+      closeCatMenu();
+    });
+
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "/" && document.activeElement !== qEl) {
+        e.preventDefault();
+        qEl.focus();
+      }
+    });
+
+    renderCategoryMenu();
+    readUrlToUi();
+    setBadge();
+    load();
+    tryAutoReconnect();
   </script>
 </body>
 </html>
