@@ -1,104 +1,1825 @@
 <!doctype html>
 <html>
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Submit Project - Republic Economy Tracker</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
-</head>
-<body class="bg-gray-50">
-  <div class="max-w-2xl mx-auto p-4">
-    <header class="flex items-center justify-between py-4">
-      <h1 class="text-2xl font-bold">Submit a Project</h1>
-      <a href="index.html" class="text-sm underline">Back</a>
-    </header>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Submit Project — Republic Tracker</title>
 
-    <form id="form" class="grid gap-4 rounded-xl border bg-white p-4">
-      <input name="name" class="rounded-lg border px-3 py-2 text-sm" placeholder="Project name" required />
-      <input name="short_description" class="rounded-lg border px-3 py-2 text-sm" placeholder="Short description (1 line)" required />
-      <textarea name="description" class="rounded-lg border px-3 py-2 text-sm" rows="5" placeholder="Long description (optional)"></textarea>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 
-      <select name="category" class="rounded-lg border px-3 py-2 text-sm" required>
-        <option value="">Select category</option>
-        <option>DeFi</option>
-        <option>AI Agents</option>
-        <option>Model Hosting</option>
-        <option>Inference</option>
-        <option>Data Marketplaces</option>
-        <option>Research Labs</option>
-        <option>Developer Tooling</option>
-        <option>Infrastructure</option>
-      </select>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
 
-      <input name="tags" class="rounded-lg border px-3 py-2 text-sm" placeholder="Tags (comma separated) e.g. open-source, sdk" />
-      <input name="website" class="rounded-lg border px-3 py-2 text-sm" placeholder="Website URL" />
-      <input name="github" class="rounded-lg border px-3 py-2 text-sm" placeholder="GitHub URL" />
-      <input name="twitter" class="rounded-lg border px-3 py-2 text-sm" placeholder="Twitter/X URL" />
-      <input name="discord" class="rounded-lg border px-3 py-2 text-sm" placeholder="Discord invite URL" />
+    <style>
+          :root{
+            --bg0:#06060a;
+            --bg1:#070a10;
+            --card: rgba(255,255,255,0.06);
+            --border: rgba(255,255,255,0.15);
+            --text:#ffffff;
+            --muted: rgba(255,255,255,0.85);
+            --muted2: rgba(255,255,255,0.65);
+            --neon:#3DFF8C;
+            --neon2:#18C964;
+            --danger:#ff6b6b;
+            --ok:#39d98a;
+          }
 
-      <button id="btn" class="rounded-lg bg-black text-white px-4 py-2 text-sm">
-        Submit (Pending Review)
-      </button>
+          html,body{height:100%}
 
-      <div id="msg" class="text-sm"></div>
-    </form>
+          body{
+            font-family: Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+            color: var(--text);
+            background:
+              radial-gradient(900px 520px at 70% 10%, rgba(61,255,140,0.12), transparent 55%),
+              radial-gradient(900px 520px at 20% 25%, rgba(24,201,100,0.10), transparent 60%),
+              radial-gradient(900px 520px at 50% 95%, rgba(61,255,140,0.08), transparent 60%),
+              linear-gradient(180deg, var(--bg0), var(--bg1) 70%, var(--bg0));
+            background-attachment: fixed;
+            overflow-x:hidden;
+            position: relative;
+          }
+
+          body::before{
+            content:"";
+            position:fixed;
+            inset:-40%;
+            z-index:-1;
+            pointer-events:none;
+            background:
+              radial-gradient(circle at 20% 30%, rgba(61,255,140,0.15), transparent 35%),
+              radial-gradient(circle at 80% 70%, rgba(24,201,100,0.12), transparent 40%);
+            filter: blur(120px);
+            animation: glowMove 18s linear infinite;
+          }
+
+          @keyframes glowMove{
+            0%{ transform: translate(0,0); }
+            50%{ transform: translate(-8%,6%); }
+            100%{ transform: translate(0,0); }
+          }
+
+          .glass{
+            background: var(--card);
+            border:1px solid var(--border);
+            backdrop-filter: blur(10px);
+            box-shadow:0 18px 60px rgba(0,0,0,0.55);
+            transition: transform .18s, border-color .18s, box-shadow .18s, background .18s;
+          }
+
+          .pipeline-step{
+  animation:pillPulse 3.5s ease-in-out infinite;
+}
+
+@keyframes pillPulse{
+  0%,100%{
+    box-shadow:
+      0 0 10px rgba(61,255,140,0.15),
+      0 0 22px rgba(61,255,140,0.08);
+  }
+
+  50%{
+    box-shadow:
+      0 0 16px rgba(61,255,140,0.28),
+      0 0 28px rgba(61,255,140,0.14);
+  }
+}
+.desc-meta{
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.char-counter{
+  font-size: 12px;
+  color: rgba(255,255,255,0.58);
+}
+
+.char-counter.limit-near{
+  color: #facc15;
+}
+
+.char-counter.limit-hit{
+  color: #f87171;
+}
+
+
+          .glass:hover{
+            border-color: rgba(61,255,140,0.20);
+            box-shadow:
+              0 0 18px rgba(61,255,140,0.07),
+              0 18px 60px rgba(0,0,0,0.58);
+          }
+
+          .submit-side-card,
+.submit-form-card{
+  background:
+    linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.035));
+  border: 1px solid rgba(255,255,255,0.10);
+  box-shadow:
+    0 14px 40px rgba(0,0,0,0.32),
+    0 26px 80px rgba(0,0,0,0.50),
+    inset 0 1px 0 rgba(255,255,255,0.04);
+}
+
+.hero-pipeline-wrap{
+  margin-top: 44px;
+  width: 100%;
+  max-width: 860px; /* extend more to the right */
+}
+
+.hero-pipeline{
+  display: grid;
+  grid-template-columns: minmax(120px, 1fr) 1fr minmax(120px, 1fr) 1fr minmax(120px, 1fr) 1fr minmax(120px, 1fr);
+  align-items: center;
+  column-gap: 10px;
+  width: 100%;
+}
+
+.pipeline-step{
+  position: relative;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  text-align:center;
+  min-height:42px;
+  width:100%;
+  padding:0 16px;
+  border-radius:999px;
+  font-size:13px;
+  font-weight:700;
+  letter-spacing:-0.01em;
+  color:#eafff2;
+
+  background: linear-gradient(
+    180deg,
+    rgba(61,255,140,0.16),
+    rgba(61,255,140,0.07)
+  );
+
+  border:1px solid rgba(61,255,140,0.35);
+
+  box-shadow:
+    0 0 12px rgba(61,255,140,0.18),
+    0 0 22px rgba(61,255,140,0.10),
+    inset 0 1px 0 rgba(255,255,255,0.05);
+
+  overflow:hidden;
+}
+
+.pipeline-step::before{
+  content:"";
+  position:absolute;
+  inset:0;
+  border-radius:inherit;
+  background: linear-gradient(
+    120deg,
+    transparent 0%,
+    transparent 35%,
+    rgba(61,255,140,0.11) 50%,
+    transparent 65%,
+    transparent 100%
+  );
+  transform: translateX(-140%);
+  animation: pillSweep 3.8s ease-in-out infinite;
+}
+
+.pipeline-line:nth-child(2)::before{ animation-delay: 0s; }
+.pipeline-line:nth-child(4)::before{ animation-delay: .45s; }
+.pipeline-line:nth-child(6)::before{ animation-delay: .9s; }
+
+@keyframes lineTravel{
+  0%{
+    transform: translateX(-120%);
+  }
+  100%{
+    transform: translateX(120%);
+  }
+}
+
+@keyframes pillSweep{
+  0%{
+    transform: translateX(-140%);
+    opacity: 0;
+  }
+  18%{
+    opacity: 1;
+  }
+  44%{
+    transform: translateX(140%);
+    opacity: .95;
+  }
+  100%{
+    transform: translateX(140%);
+    opacity: 0;
+  }
+}
+
+.pipeline-line{
+  position: relative;
+  width: 100%;
+  height: 2px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, rgba(255,255,255,0.08), rgba(255,255,255,0.18), rgba(255,255,255,0.08));
+  overflow: hidden;
+}
+
+.pipeline-line::before{
+  content:"";
+  position:absolute;
+  inset:0;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(61,255,140,0.95) 50%,
+    transparent 100%
+  );
+  transform: translateX(-120%);
+  animation: lineTravel 2.8s linear infinite;
+  filter: blur(.2px);
+  box-shadow: 0 0 14px rgba(61,255,140,0.35);
+}
+
+.pipeline-step:nth-child(3)::before{ animation-delay: .35s; }
+.pipeline-step:nth-child(5)::before{ animation-delay: .7s; }
+.pipeline-step:nth-child(7)::before{ animation-delay: 1.05s; }
+
+
+.pipeline-line::after{
+  content:"";
+  position:absolute;
+  left:-30px;
+  top:0;
+  height:2px;
+  width:30px;
+  background:linear-gradient(
+    90deg,
+    transparent,
+    #3dff8c,
+    transparent
+  );
+  animation:pipelineMove 2.6s linear infinite;
+}
+
+.pipeline-line:nth-of-type(2)::after{ animation-delay:.6s; }
+.pipeline-line:nth-of-type(4)::after{ animation-delay:1.2s; }
+.pipeline-line:nth-of-type(6)::after{ animation-delay:1.8s; }
+
+@keyframes pipelineMove{
+  0%{
+    left:-30px;
+  }
+  100%{
+    left:100%;
+  }
+}
+
+.submit-form-card{
+  position: relative;
+  overflow: hidden;
+}
+
+.hero-flow{
+  display:flex;
+  flex-wrap:wrap;
+  align-items:center;
+  gap:8px;
+  max-width: 760px;
+}
+
+.flow-pill{
+  position:relative;
+  display:inline-flex;
+  align-items:center;
+  min-height:34px;
+  padding:0 14px;
+  border-radius:999px;
+  font-size:12px;
+  font-weight:700;
+  letter-spacing:-0.01em;
+  color:rgba(255,255,255,0.88);
+  background:rgba(255,255,255,0.045);
+  border:1px solid rgba(255,255,255,0.09);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.04),
+    0 6px 18px rgba(0,0,0,0.18);
+  overflow:hidden;
+}
+
+.flow-pill::before{
+  content:"";
+  position:absolute;
+  inset:0;
+  border-radius:inherit;
+  background:linear-gradient(
+    120deg,
+    transparent 0%,
+    transparent 35%,
+    rgba(61,255,140,0.10) 50%,
+    transparent 65%,
+    transparent 100%
+  );
+  transform:translateX(-140%);
+  animation:flowShine 3.6s ease-in-out infinite;
+}
+
+.flow-pill:nth-child(3)::before{ animation-delay:.35s; }
+.flow-pill:nth-child(5)::before{ animation-delay:.7s; }
+.flow-pill:nth-child(7)::before{ animation-delay:1.05s; }
+
+.flow-pill.is-active{
+  color:#d9ffe9;
+  border-color:rgba(61,255,140,0.22);
+  background:linear-gradient(180deg, rgba(61,255,140,0.12), rgba(61,255,140,0.05));
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.05),
+    0 0 0 1px rgba(61,255,140,0.04),
+    0 8px 22px rgba(61,255,140,0.10),
+    0 0 18px rgba(61,255,140,0.08);
+}
+
+.flow-arrow{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  width:18px;
+  font-size:13px;
+  color:rgba(61,255,140,0.85);
+  text-shadow:0 0 10px rgba(61,255,140,0.45);
+  animation:flowArrowPulse 1.8s ease-in-out infinite;
+}
+
+@keyframes flowShine{
+  0%{ transform:translateX(-140%); opacity:.0; }
+  18%{ opacity:1; }
+  42%{ transform:translateX(140%); opacity:.9; }
+  100%{ transform:translateX(140%); opacity:0; }
+}
+
+@keyframes flowArrowPulse{
+  0%,100%{
+    transform:translateX(0);
+    opacity:.65;
+  }
+  50%{
+    transform:translateX(2px);
+    opacity:1;
+  }
+}
+
+@media (max-width: 768px){
+  .hero-flow{
+    gap:6px;
+  }
+
+  .flow-pill{
+    min-height:30px;
+    padding:0 11px;
+    font-size:11px;
+  }
+
+  .flow-arrow{
+    width:auto;
+    font-size:12px;
+  }
+}
+
+.submit-form-card::before{
+  content:"";
+  position:absolute;
+  inset:0;
+  pointer-events:none;
+  background:
+    linear-gradient(135deg, rgba(61,255,140,0.05), transparent 28%, transparent 72%, rgba(61,255,140,0.04));
+  opacity:.9;
+}
+
+.form-head{
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:16px;
+}
+
+.status-chip{
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+  padding:9px 12px;
+  border-radius:999px;
+  background:rgba(255,255,255,0.05);
+  border:1px solid rgba(255,255,255,0.10);
+  color:rgba(255,255,255,0.82);
+  font-size:12px;
+  font-weight:600;
+  white-space:nowrap;
+}
+
+.status-dot{
+  width:7px;
+  height:7px;
+  border-radius:999px;
+  background:var(--neon);
+  box-shadow:0 0 12px rgba(61,255,140,0.7);
+}
+
+.mode-bar{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  min-height:54px;
+  padding:0 16px;
+  border-radius:18px;
+  border:1px solid rgba(255,255,255,0.10);
+  background:linear-gradient(180deg, rgba(255,255,255,0.045), rgba(255,255,255,0.03));
+  color:rgba(255,255,255,0.72);
+  font-size:14px;
+}
+
+.mode-bar strong{
+  color:#fff;
+  font-weight:700;
+}
+
+.mode-dot{
+  width:8px;
+  height:8px;
+  border-radius:999px;
+  background:var(--neon);
+  box-shadow:0 0 12px rgba(61,255,140,0.65);
+}
+
+.form-section{
+  display:grid;
+  gap:18px;
+  padding:22px;
+  border-radius:22px;
+  background:rgba(255,255,255,0.025);
+  border:1px solid rgba(255,255,255,0.07);
+}
+
+.section-mini-head{
+  display:grid;
+  gap:4px;
+}
+
+.section-mini-title{
+  font-size:15px;
+  font-weight:700;
+  color:#fff;
+  letter-spacing:-0.01em;
+}
+
+.section-mini-copy{
+  font-size:12px;
+  line-height:1.55;
+  color:rgba(255,255,255,0.58);
+}
+
+.logo-upload-shell{
+  display:flex;
+  align-items:center;
+  gap:16px;
+  padding:14px;
+  border-radius:20px;
+  border:1px solid rgba(255,255,255,0.08);
+  background:rgba(255,255,255,0.025);
+}
+
+.logo-preview-card{
+  width:72px;
+  height:72px;
+  border-radius:18px;
+  overflow:hidden;
+  display:grid;
+  place-items:center;
+  flex-shrink:0;
+  background:rgba(0,0,0,0.35);
+  border:1px solid rgba(255,255,255,0.10);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.03);
+}
+
+.logo-fallback-text{
+  font-size:11px;
+  color:var(--muted2);
+}
+
+.upload-input{
+  min-height:50px;
+}
+
+.field{
+  min-height:46px;
+  border-radius:16px;
+  padding:11px 14px;
+  background:rgba(255,255,255,0.045);
+  border:1px solid rgba(255,255,255,0.11);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.03);
+  font-size:14px;
+}
+
+.field:hover{
+  background:rgba(255,255,255,0.06);
+  border-color:rgba(255,255,255,0.18);
+}
+
+.field:focus{
+  border-color:rgba(61,255,140,0.42);
+  box-shadow:
+    0 0 0 4px rgba(61,255,140,0.09),
+    inset 0 1px 0 rgba(255,255,255,0.03);
+}
+
+.category-btn{
+  min-height:50px;
+}
+
+textarea.field{
+  resize:vertical;
+  padding-top:14px;
+}
+
+.submit-actions{
+  display:grid;
+  gap:12px;
+}
+
+.submit-btn{
+  min-height:54px;
+  font-size:14px;
+  letter-spacing:-0.01em;
+  box-shadow:
+    0 12px 30px rgba(61,255,140,0.16),
+    0 0 24px rgba(61,255,140,0.07);
+}
+
+.submit-success-box{
+  background:rgba(0,0,0,0.28);
+  border:1px solid rgba(255,255,255,0.10);
+}
+
+.support-card{
+  position:relative;
+  overflow:hidden;
+}
+
+.support-card::before{
+  content:"";
+  position:absolute;
+  inset:auto -20% -35% auto;
+  width:220px;
+  height:220px;
+  border-radius:999px;
+  background:radial-gradient(circle, rgba(61,255,140,0.10), transparent 65%);
+  filter:blur(10px);
+  pointer-events:none;
+}
+
+.support-row{
+  display:grid;
+  grid-template-columns:44px minmax(0,1fr);
+  gap:14px;
+  align-items:start;
+  padding:14px;
+  border-radius:18px;
+  background:rgba(255,255,255,0.03);
+  border:1px solid rgba(255,255,255,0.07);
+}
+
+.support-icon{
+  width:44px;
+  height:44px;
+  border-radius:14px;
+  display:grid;
+  place-items:center;
+  background:linear-gradient(180deg, rgba(61,255,140,0.14), rgba(61,255,140,0.06));
+  border:1px solid rgba(61,255,140,0.18);
+  color:#bfffd7;
+  font-size:11px;
+  font-weight:800;
+  letter-spacing:.08em;
+}
+
+.support-title{
+  font-size:14px;
+  font-weight:700;
+  color:#fff;
+  line-height:1.35;
+}
+
+.support-copy{
+  margin-top:4px;
+  font-size:12px;
+  line-height:1.6;
+  color:rgba(255,255,255,0.62);
+}
+
+@media (max-width: 768px){
+  .form-head{
+    flex-direction:column;
+    align-items:flex-start;
+  }
+
+  .logo-upload-shell{
+    flex-direction:column;
+    align-items:flex-start;
+  }
+
+  .logo-preview-card{
+    width:64px;
+    height:64px;
+  }
+
+  .form-section{
+    padding:18px;
+  }
+}
+
+          .label{
+            font-size:12px;
+            letter-spacing:.12em;
+            text-transform:uppercase;
+            color:var(--muted);
+            font-weight:600;
+          }
+
+          .auth-hints{
+        margin: 10px 0 0;
+        padding: 0;
+        list-style: none;
+      }
+
+      .neon-arrow-list li{
+        position: relative;
+        padding-left: 26px;
+        margin-bottom: 10px;
+        color: var(--muted);
+        font-size: 14px;
+        line-height: 1.65;
+      }
+
+      .neon-arrow-list li::before{
+        content: "➜";
+        position: absolute;
+        left: 0;
+        top: 0;
+        color: #34d399;
+        font-size: 14px;
+        font-weight: 700;
+        text-shadow:
+          0 0 4px rgba(52, 211, 153, 0.9),
+          0 0 10px rgba(52, 211, 153, 0.7),
+          0 0 18px rgba(16, 185, 129, 0.45);
+        animation: neonArrowMove 1.6s ease-in-out infinite;
+      }
+
+      @keyframes neonArrowMove{
+        0%{
+          transform: translateX(0);
+          opacity: 0.7;
+        }
+        50%{
+          transform: translateX(4px);
+          opacity: 1;
+        }
+        100%{
+          transform: translateX(0);
+          opacity: 0.7;
+        }
+      }
+
+      .neon-arrow-list li:nth-child(2)::before,
+      .neon-arrow-list li:nth-child(2)::after{
+        animation-delay: .2s;
+      }
+
+          .hint{
+            font-size:12px;
+            color:var(--muted2);
+          }
+
+          .pill{
+            border:1px solid rgba(255,255,255,0.15);
+            background:rgba(255,255,255,0.05);
+            color: rgba(255,255,255,0.92);
+          }
+
+          .btn{
+            background:linear-gradient(90deg,#3DFF8C,#18C964);
+            color:#000;
+            border:1px solid rgba(255,255,255,0.12);
+            box-shadow:0 8px 30px rgba(61,255,140,0.16);
+            transition:.18s ease;
+          }
+
+          .btn:hover{
+            filter:brightness(1.08);
+            box-shadow:
+              0 0 14px rgba(61,255,140,0.22),
+              0 10px 35px rgba(61,255,140,0.25);
+            transform: translateY(-1px);
+          }
+
+          .btn:active{
+            transform: translateY(1px);
+          }
+
+          .field{
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.15);
+            color: var(--text);
+            transition: border-color .18s, box-shadow .18s, background .18s;
+          }
+
+          .field::placeholder{
+            color: rgba(255,255,255,0.42);
+          }
+
+          .field:hover{
+            background: rgba(255,255,255,0.06);
+            border-color: rgba(255,255,255,0.20);
+          }
+
+          .field:focus{
+            outline: none;
+            border-color: rgba(61,255,140,0.55);
+            box-shadow: 0 0 0 4px rgba(61,255,140,0.10);
+            background: rgba(255,255,255,0.07);
+          }
+
+          .brand-logo-icon{
+            height: 96px;
+            width: 96px;
+            object-fit: contain;
+            border-radius: 20px;
+            flex-shrink: 0;
+            filter:
+              drop-shadow(0 0 10px rgba(61,255,140,0.35))
+              drop-shadow(0 0 24px rgba(61,255,140,0.25))
+              drop-shadow(0 0 40px rgba(61,255,140,0.15));
+            animation: logoPulse 4s ease-in-out infinite;
+          }
+
+          @keyframes logoPulse{
+            0%{
+              transform: scale(1);
+              filter:
+                drop-shadow(0 0 10px rgba(61,255,140,0.28))
+                drop-shadow(0 0 24px rgba(61,255,140,0.18))
+                drop-shadow(0 0 40px rgba(61,255,140,0.10));
+            }
+            50%{
+              transform: scale(1.03);
+              filter:
+                drop-shadow(0 0 14px rgba(61,255,140,0.40))
+                drop-shadow(0 0 30px rgba(61,255,140,0.26))
+                drop-shadow(0 0 48px rgba(61,255,140,0.16));
+            }
+            100%{
+              transform: scale(1);
+              filter:
+                drop-shadow(0 0 10px rgba(61,255,140,0.28))
+                drop-shadow(0 0 24px rgba(61,255,140,0.18))
+                drop-shadow(0 0 40px rgba(61,255,140,0.10));
+            }
+          }
+
+          .brand-title{
+            color:#ffffff;
+            letter-spacing:-0.02em;
+            text-shadow:
+              0 0 8px rgba(255,255,255,0.10),
+              0 0 22px rgba(61,255,140,0.14);
+          }
+
+          .brand-subtitle{
+            color: rgba(255,255,255,0.68);
+            letter-spacing: .06em;
+          }
+
+          .nav-link-pro{
+            color: rgba(255,255,255,0.84);
+            transition: all .18s ease;
+          }
+
+          .nav-link-pro:hover{
+            color: #ffffff;
+            background: rgba(255,255,255,0.05);
+            box-shadow: 0 0 12px rgba(61,255,140,0.06);
+          }
+
+          .glow-title{
+            text-shadow:
+              0 0 4px rgba(61,255,140,0.45),
+              0 0 10px rgba(61,255,140,0.28);
+          }
+
+          .codebox{
+            background: rgba(0,0,0,0.35);
+            border: 1px solid rgba(255,255,255,0.12);
+          }
+
+          .menu-item{
+            padding: 10px 12px;
+            font-size: 14px;
+            color: rgba(255,255,255,0.92);
+            border-top: 1px solid rgba(255,255,255,0.06);
+            background: transparent;
+            transition: background .16s, border-color .16s;
+          }
+
+          .menu-item:hover{
+            background: rgba(61,255,140,0.12);
+          }
+
+          .menu-item.active{
+            background: rgba(61,255,140,0.18);
+            border-left: 3px solid var(--neon);
+          }
+
+          #catMenu{
+            position: fixed;
+            z-index: 999999;
+            width: 320px;
+            border-radius: 14px;
+            overflow: hidden;
+            display: none;
+            background: rgba(10,12,16,0.92);
+            border: 1px solid rgba(255,255,255,0.12);
+            backdrop-filter: blur(12px);
+            box-shadow:
+              0 0 20px rgba(61,255,140,0.08),
+              0 22px 70px rgba(0,0,0,0.65);
+          }
+
+          #catMenu.open{ display: block; }
+
+          #catMenuInner{
+            max-height: 260px;
+            overflow-y: auto;
+          }
+
+          #catMenuInner::-webkit-scrollbar{ width: 10px; }
+          #catMenuInner::-webkit-scrollbar-thumb{
+            background: rgba(255,255,255,0.12);
+            border-radius: 999px;
+          }
+          #catMenuInner::-webkit-scrollbar-track{
+            background: rgba(255,255,255,0.04);
+          }
+
+          .wallet-menu{
+            position: fixed;
+            z-index: 1000000;
+            min-width: 220px;
+            display: none;
+            background: rgba(10,12,16,0.96);
+            border: 1px solid rgba(255,255,255,0.12);
+            border-radius: 14px;
+            backdrop-filter: blur(12px);
+            box-shadow:
+              0 0 20px rgba(61,255,140,0.08),
+              0 22px 70px rgba(0,0,0,0.65);
+            overflow: hidden;
+          }
+
+          .wallet-menu.open{
+            display:block;
+          }
+
+          .wallet-item{
+            width:100%;
+            text-align:left;
+            padding:12px 14px;
+            font-size:14px;
+            color:rgba(255,255,255,0.92);
+            background:transparent;
+            border-top:1px solid rgba(255,255,255,0.06);
+            transition: background .16s ease;
+          }
+
+          .wallet-item:hover{
+            background:rgba(61,255,140,0.12);
+          }
+
+          .wallet-head{
+            padding:12px 14px;
+            font-size:12px;
+            color:var(--muted2);
+            background:rgba(255,255,255,0.03);
+          }
+
+          @media (max-width: 640px){
+            .brand-logo-icon{
+              height:70px;
+              width:70px;
+            }
+          }
+    </style>
+  </head>
+
+  <body>
+    <div class="max-w-6xl mx-auto px-4 py-6">
+      <header class="flex items-center justify-between py-2">
+        <div class="flex items-center gap-4">
+          <img
+            src="logo-icon.png"
+            alt="Republic Tracker logo"
+            class="brand-logo-icon"
+          />
+
+          <div class="leading-tight">
+            <div
+              class="brand-title text-2xl md:text-3xl font-extrabold tracking-tight"
+            >
+              Republic Tracker
+            </div>
+            <div
+              class="brand-subtitle text-[11px] md:text-xs font-medium uppercase mt-1"
+            >
+              Republic Ecosystem Intelligence
+            </div>
+          </div>
+        </div>
+
+        <nav class="flex items-center gap-2 md:gap-3 text-sm">
+          <a
+            href="home.html"
+            class="nav-link-pro rounded-xl px-4 py-2.5 font-medium"
+          >
+            Dashboard
+          </a>
+
+          <a
+            href="ai.html"
+            class="nav-link-pro rounded-xl px-4 py-2.5 font-medium"
+          >
+            AI Studio
+          </a>
+
+          <a
+            href="index.html"
+            class="nav-link-pro rounded-xl px-4 py-2.5 font-medium"
+          >
+            Projects
+          </a>
+
+          <button
+            id="connectBtn"
+            class="btn rounded-xl px-5 py-2.5 text-sm font-semibold"
+          >
+            Connect Wallet
+          </button>
+        </nav>
+      </header>
+
+<section class="glass hero-banner rounded-[28px] p-8 md:p-9">        <div
+          class="flex flex-col gap-3 md:flex-row md:items-end md:justify-between"
+        >
+          <div>
+            
+            <h1
+              class="mt-2 text-xl md:text-2xl font-bold tracking-tight glow-title"
+            >
+              Add your project to the Republic economy
+            </h1>
+            <div class="hero-pipeline-wrap" aria-label="Project submission flow">
+  <div class="hero-pipeline">
+    <div class="pipeline-step active">Submit</div>
+    <div class="pipeline-line"></div>
+
+    <div class="pipeline-step">Review</div>
+    <div class="pipeline-line"></div>
+
+    <div class="pipeline-step">Approved</div>
+    <div class="pipeline-line"></div>
+
+    <div class="pipeline-step">Get Listed</div>
   </div>
+</div>
+          </div>
 
-  <script>
-    const SUPABASE_URL = "PASTE_SUPABASE_URL";
-    const SUPABASE_ANON_KEY = "PASTE_SUPABASE_ANON_KEY";
+          
+        </div>
+      </section>
 
-    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+      <div class="mt-6 grid gap-6 lg:grid-cols-5 items-start">
+  <aside class="lg:col-span-2 space-y-6">
+    <div class="glass submit-side-card rounded-[28px] p-6 md:p-7">
+      <div class="label">Project submission</div>
+      <h2 class="mt-2 text-[28px] leading-[1.05] font-extrabold tracking-tight brand-title">
+        Launch into the ecosystem
+      </h2>
 
-    const form = document.getElementById("form");
-    const msg = document.getElementById("msg");
-    const btn = document.getElementById("btn");
+      <div id="leftAuthHint" class="mt-6 text-sm" style="color: var(--muted);">
+        Connect wallet to submit with wallet-based ownership, or submit without wallet and use an edit key later.
+      </div>
+    </div>
 
-    function slugify(str) {
-      return str.toLowerCase().trim()
-        .replace(/[^a-z0-9]+/g, "-")
-        .replace(/(^-|-$)+/g, "");
-    }
+    <div class="glass submit-side-card rounded-[28px] p-6 md:p-7 support-card">
+      <div class="label">Submission tips</div>
+      <div class="mt-4 grid gap-3">
+        <div class="support-row">
+          <div class="support-icon">01</div>
+          <div>
+            <div class="support-title">Keep the name clear</div>
+            <div class="support-copy">Use the exact project name people already know from X, GitHub, or your website.</div>
+          </div>
+        </div>
 
-    form.addEventListener("submit", async (e) => {
-      e.preventDefault();
-      msg.textContent = "";
-      btn.disabled = true;
-      btn.classList.add("opacity-60");
+        <div class="support-row">
+          <div class="support-icon">02</div>
+          <div>
+            <div class="support-title">Use a strong one-line pitch</div>
+            <div class="support-copy">Explain what the project does in one clean sentence without extra filler.</div>
+          </div>
+        </div>
 
-      const fd = new FormData(form);
-      const name = (fd.get("name") || "").trim();
+        <div class="support-row">
+          <div class="support-icon">03</div>
+          <div>
+            <div class="support-title">Add at least one real link</div>
+            <div class="support-copy">Website, GitHub, X, or Discord helps verify the project quickly.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </aside>
 
-      const payload = {
+  <main class="lg:col-span-3">
+    <form id="form" class="glass submit-form-card rounded-[28px] p-6 md:p-7 grid gap-6">
+      <div class="form-head">
+        <div>
+          <div class="label">Project information</div>
+        </div>
+
+        <span class="status-chip">
+          <span class="status-dot"></span>
+          Pending after submit
+        </span>
+      </div>
+
+      <div id="walletStatusBar" class="mode-bar">
+        <span class="mode-dot"></span>
+        <span>Submission mode</span>
+        <strong id="walletModeText">Edit key mode</strong>
+      </div>
+
+      <section class="form-section">
+        <div class="section-mini-head">
+          <div class="section-mini-title">Branding</div>
+          <div class="section-mini-copy">Help people recognize your project instantly.</div>
+        </div>
+
+        <div class="grid gap-3">
+          <div class="label">Logo (optional)</div>
+          <div class="logo-upload-shell">
+            <div class="logo-preview-card">
+              <img id="logoPreview" class="hidden h-full w-full object-cover" alt="">
+              <div id="logoFallback" class="logo-fallback-text">Preview</div>
+            </div>
+
+            <div class="flex-1 min-w-0">
+              <input
+                id="logoInput"
+                type="file"
+                name="logo"
+                accept="image/*"
+                class="field upload-input w-full rounded-2xl px-4 py-3 text-sm"
+              />
+              <div class="hint mt-2">PNG/JPG recommended. Square logos look best.</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="form-section">
+        <div class="section-mini-head">
+          <div class="section-mini-title">Identity</div>
+          <div class="section-mini-copy">Basic information shown in your project card.</div>
+        </div>
+
+        <div class="grid gap-5 sm:grid-cols-2">
+          <div class="grid gap-2">
+            <div class="label">Project name *</div>
+            <input
+              name="name"
+              required
+              placeholder="e.g., My Awesome Project"
+              class="field rounded-2xl px-4 py-3 text-sm"
+            />
+          </div>
+
+          <div class="grid gap-2">
+            <div class="label">Category *</div>
+            <input type="hidden" name="category" id="categoryValue" required />
+
+            <button
+              type="button"
+              id="catBtn"
+              class="field category-btn w-full rounded-2xl px-4 py-3 text-sm text-left flex items-center justify-between"
+            >
+              <span id="catLabel" class="text-white/70">Select category</span>
+              <span class="text-white/50 text-base">▾</span>
+            </button>
+
+            <div class="hint">Pick the closest match.</div>
+          </div>
+        </div>
+
+        <div class="grid gap-2">
+  <div class="label">Short description *</div>
+  <textarea
+    id="shortDescription"
+    name="short_description"
+    required
+    rows="3"
+    maxlength="120"
+    placeholder="One sentence about what you’re building..."
+    class="field rounded-2xl px-4 py-3 text-sm"
+  ></textarea>
+
+  <div class="desc-meta">
+    <span class="hint">Keep it short. Max 120 characters.</span>
+    <span id="descCounter" class="char-counter">0 / 120</span>
+  </div>
+</div>
+      </section>
+
+      <section class="form-section">
+        <div class="section-mini-head">
+          <div class="section-mini-title">Links</div>
+          <div class="section-mini-copy">At least one public link is required.</div>
+        </div>
+
+        <div class="grid gap-4">
+          <div class="grid gap-2">
+            <div class="label">Website</div>
+            <input
+              id="website"
+              name="website"
+              placeholder="https://example.com"
+              class="field rounded-2xl px-4 py-3 text-sm"
+            />
+          </div>
+
+          <div class="grid gap-4 sm:grid-cols-2">
+            <div class="grid gap-2">
+              <div class="label">Twitter / X</div>
+              <input
+                id="twitter"
+                name="twitter"
+                placeholder="https://x.com/yourhandle"
+                class="field rounded-2xl px-4 py-3 text-sm"
+              />
+            </div>
+
+            <div class="grid gap-2">
+              <div class="label">GitHub</div>
+              <input
+                id="github"
+                name="github"
+                placeholder="https://github.com/your-org"
+                class="field rounded-2xl px-4 py-3 text-sm"
+              />
+            </div>
+          </div>
+
+          <div class="grid gap-2">
+            <div class="label">Discord invite</div>
+            <input
+              id="discord"
+              name="discord"
+              placeholder="https://discord.gg/xxxx"
+              class="field rounded-2xl px-4 py-3 text-sm"
+            />
+          </div>
+        </div>
+      </section>
+
+      <div class="submit-actions">
+        <button id="btn" class="btn submit-btn rounded-2xl px-5 py-3.5 font-semibold text-sm">
+          Submit Project
+        </button>
+
+        <div id="msg" class="text-sm min-h-[20px]"></div>
+
+        <div id="after" class="hidden mt-1 rounded-2xl p-5 codebox submit-success-box">
+          <div class="text-sm font-semibold" style="color: var(--ok);"></div>
+
+          <div id="walletAfterBlock" class="hidden">
+            <div class="mt-1 text-sm" style="color: var(--muted);">
+              This project was linked to your wallet.
+            </div>
+            <div class="mt-3 text-sm" style="color: var(--muted);">
+              Connected wallet:
+              <span id="walletOut" class="font-semibold text-white break-all"></span>
+            </div>
+            <div class="mt-3 text-sm" style="color: var(--muted);">
+              You can update your project details at any time:
+              <a id="walletUpdateLink" class="nav-link-pro underline underline-offset-4" href="update.html">update.html</a>
+            </div>
+          </div>
+
+          <div id="keyAfterBlock" class="hidden">
+            <div class="mt-1 text-sm" style="color: var(--muted);">
+              Save your <b>EDIT KEY</b>. You’ll need it to update your project later.
+              <span class="text-red-500 font-bold">DON'T SHARE YOUR EDIT KEY WITH ANYONE</span>
+            </div>
+
+            <div class="mt-3 flex items-center gap-2">
+              <div id="editKeyOut" class="w-full rounded-xl px-3 py-2 text-sm codebox text-white break-all font-mono min-h-[44px] flex items-center"></div>
+              <button type="button" id="copyKey" class="pill rounded-xl px-3 py-2 text-xs hover:bg-white/10">
+                Copy
+              </button>
+            </div>
+
+            <div class="mt-3 text-sm" style="color: var(--muted);">
+              You can update your project details at any time:
+              <a id="updateLink" class="nav-link-pro underline underline-offset-4" href="update.html">update.html</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </form>
+  </main>
+</div>
+    </div>
+
+    <div id="catMenu" aria-hidden="true">
+      <div id="catMenuInner"></div>
+    </div>
+
+    <div id="walletMenu" class="wallet-menu" aria-hidden="true">
+      <div class="wallet-head">
+        Connected wallet
+        <div
+          id="walletMenuAddress"
+          class="mt-1 text-white text-sm break-all"
+        ></div>
+      </div>
+      <button id="copyWalletBtn" type="button" class="wallet-item">
+        Copy address
+      </button>
+      <button id="disconnectWalletBtn" type="button" class="wallet-item">
+        Disconnect wallet
+      </button>
+    </div>
+
+    <script>
+          const CHAIN_ID = "raitestnet_77701-1";
+          const WALLET_STORAGE_KEY = "republic_tracker_wallet_address";
+
+          const connectBtn = document.getElementById("connectBtn");
+          const walletMenu = document.getElementById("walletMenu");
+          const walletMenuAddress = document.getElementById("walletMenuAddress");
+          const copyWalletBtn = document.getElementById("copyWalletBtn");
+          const disconnectWalletBtn = document.getElementById("disconnectWalletBtn");
+
+          const walletModeText = document.getElementById("walletModeText");
+          const leftAuthHint = document.getElementById("leftAuthHint");
+
+          const walletAfterBlock = document.getElementById("walletAfterBlock");
+          const keyAfterBlock = document.getElementById("keyAfterBlock");
+          const walletOut = document.getElementById("walletOut");
+          const walletSlugOut = document.getElementById("walletSlugOut");
+          const walletUpdateLink = document.getElementById("walletUpdateLink");
+const shortDescription = document.getElementById("shortDescription");
+const descCounter = document.getElementById("descCounter");
+
+if (shortDescription && descCounter) {
+  const updateDescCounter = () => {
+    const len = shortDescription.value.length;
+    descCounter.textContent = `${len} / 120`;
+    descCounter.classList.toggle("limit-near", len >= 100 && len < 120);
+    descCounter.classList.toggle("limit-hit", len >= 120);
+  };
+
+  shortDescription.addEventListener("input", updateDescCounter);
+  updateDescCounter();
+}
+          let connectedAddress = null;
+          let walletWatcherAttached = false;
+
+          function shortAddress(address = ""){
+            if (!address) return "Connect Wallet";
+            return `${address.slice(0,6)}...${address.slice(-4)}`;
+          }
+
+          function saveWalletAddress(address){
+            if (!address) {
+              localStorage.removeItem(WALLET_STORAGE_KEY);
+              return;
+            }
+            localStorage.setItem(WALLET_STORAGE_KEY, address);
+          }
+
+          function getSavedWalletAddress(){
+            return localStorage.getItem(WALLET_STORAGE_KEY) || "";
+          }
+
+          function updateWalletModeUI() {
+        if (connectedAddress) {
+          walletModeText.textContent = "Wallet mode";
+          leftAuthHint.innerHTML = `
+            <ul class="auth-hints neon-arrow-list">
+              <li>Your connected wallet address will be stored with the submission.</li>
+              <li>You will edit later using the same wallet.</li>
+            </ul>
+          `;
+        } else {
+          walletModeText.textContent = "Edit key mode";
+          leftAuthHint.innerHTML = `
+            <ul class="auth-hints neon-arrow-list">
+              <li>Connect wallet to submit with wallet-based ownership.</li>
+              <li>Submit without wallet and use an edit key later.</li>
+            </ul>
+          `;
+        }
+      }
+
+          function setWalletConnectedUI(address){
+            connectedAddress = address;
+            connectBtn.textContent = shortAddress(address);
+            walletMenuAddress.textContent = address;
+            saveWalletAddress(address);
+            updateWalletModeUI();
+          }
+
+          function setWalletDisconnectedUI(){
+            connectedAddress = null;
+            connectBtn.textContent = "Connect Wallet";
+            walletMenuAddress.textContent = "";
+            saveWalletAddress("");
+            closeWalletMenu();
+            updateWalletModeUI();
+          }
+
+          async function getCurrentKeplrAddress(){
+            if(!window.keplr) return "";
+            const signer = window.getOfflineSigner(CHAIN_ID);
+            const accounts = await signer.getAccounts();
+            return accounts?.[0]?.address || "";
+          }
+
+          async function connectWallet(){
+            if(!window.keplr){
+              alert("Install Keplr wallet");
+              window.open("https://www.keplr.app/","_blank");
+              return;
+            }
+
+            try{
+              await window.keplr.enable(CHAIN_ID);
+              const address = await getCurrentKeplrAddress();
+
+              if(!address){
+                throw new Error("No wallet address found.");
+              }
+
+              setWalletConnectedUI(address);
+              attachWalletWatcher();
+            }catch(e){
+              alert("Wallet connection failed");
+            }
+          }
+
+          function disconnectWallet(){
+            setWalletDisconnectedUI();
+          }
+
+          async function tryAutoReconnect(){
+            const saved = getSavedWalletAddress();
+            if(!saved || !window.keplr) {
+              updateWalletModeUI();
+              return;
+            }
+
+            try{
+              await window.keplr.enable(CHAIN_ID);
+              const current = await getCurrentKeplrAddress();
+
+              if(!current) {
+                setWalletDisconnectedUI();
+                return;
+              }
+
+              if(current !== saved){
+                setWalletDisconnectedUI();
+                alert("Connected wallet has changed. Please reconnect your wallet again.");
+                return;
+              }
+
+              setWalletConnectedUI(current);
+              attachWalletWatcher();
+            }catch(_){
+              setWalletDisconnectedUI();
+            }
+          }
+
+          function openWalletMenu(){
+            if(!connectedAddress) return;
+            const rect = connectBtn.getBoundingClientRect();
+            walletMenu.style.left = `${rect.left}px`;
+            walletMenu.style.top = `${rect.bottom + 8}px`;
+            walletMenu.classList.add("open");
+            walletMenu.setAttribute("aria-hidden", "false");
+          }
+
+          function closeWalletMenu(){
+            walletMenu.classList.remove("open");
+            walletMenu.setAttribute("aria-hidden", "true");
+          }
+
+          async function handleWalletButtonClick(e){
+            e.stopPropagation();
+
+            if(!connectedAddress){
+              await connectWallet();
+              return;
+            }
+
+            if(walletMenu.classList.contains("open")) closeWalletMenu();
+            else openWalletMenu();
+          }
+
+          async function copyWalletAddress(){
+            if(!connectedAddress) return;
+
+            try{
+              await navigator.clipboard.writeText(connectedAddress);
+            }catch(_){
+              alert("Could not copy wallet address.");
+            }
+            closeWalletMenu();
+          }
+
+          function attachWalletWatcher(){
+            if(walletWatcherAttached || !window.keplr) return;
+
+            window.addEventListener("keplr_keystorechange", async () => {
+              if(!connectedAddress) return;
+
+              try{
+                const current = await getCurrentKeplrAddress();
+
+                if(!current || current !== connectedAddress){
+                  const oldAddress = connectedAddress;
+                  setWalletDisconnectedUI();
+                  if(oldAddress){
+                    alert("Connected wallet has changed. Please reconnect your wallet again.");
+                  }
+                }
+              }catch(_){
+                setWalletDisconnectedUI();
+                alert("Wallet state changed. Please reconnect your wallet again.");
+              }
+            });
+
+            walletWatcherAttached = true;
+          }
+
+          connectBtn.addEventListener("click", handleWalletButtonClick);
+          copyWalletBtn.addEventListener("click", copyWalletAddress);
+          disconnectWalletBtn.addEventListener("click", disconnectWallet);
+
+          window.addEventListener("resize", () => {
+            if(walletMenu.classList.contains("open")) openWalletMenu();
+          });
+
+          window.addEventListener("scroll", () => {
+            if(walletMenu.classList.contains("open")) openWalletMenu();
+          }, true);
+
+          document.addEventListener("click", (e) => {
+            if(walletMenu.classList.contains("open") && !walletMenu.contains(e.target) && !connectBtn.contains(e.target)){
+              closeWalletMenu();
+            }
+          });
+
+          const SUPABASE_URL = "https://ozafpxboemvvkotwgxoy.supabase.co";
+          const SUPABASE_KEY = "sb_publishable_h-9NYJmjFh8oeMmlK6kPhA_L5zQZRKT";
+          const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+          function slugify(text) {
+            return String(text || "")
+              .toLowerCase()
+              .trim()
+              .replace(/[^a-z0-9]+/g, "-")
+              .replace(/(^-|-$)/g, "");
+          }
+
+          async function makeUniqueSlug(baseSlug) {
+            let slug = baseSlug;
+            let i = 2;
+            while (true) {
+              const { data, error } = await sb.from("projects").select("id").eq("slug", slug).limit(1);
+              if (error) throw error;
+              if (!data || data.length === 0) return slug;
+              slug = `${baseSlug}-${i}`;
+              i++;
+            }
+          }
+
+          function randomEditKey() {
+            return Array.from(crypto.getRandomValues(new Uint8Array(16)))
+              .map(b => b.toString(16).padStart(2, "0"))
+              .join("");
+          }
+
+          function normalizeUrl(v) {
+            const s = String(v || "").trim();
+            if (!s) return "";
+            if (s.startsWith("http://") || s.startsWith("https://")) return s;
+            return "https://" + s;
+          }
+
+          ["website","twitter","github","discord"].forEach(id => {
+            const el = document.getElementById(id);
+            el.addEventListener("blur", () => { el.value = normalizeUrl(el.value); });
+          });
+
+          const categories = [
+            "DeFi",
+            "AI Agents",
+            "Model Hosting",
+            "Inference",
+            "Data Marketplaces",
+            "Research Labs",
+            "Developer Tooling",
+            "Infrastructure",
+          ];
+
+          const catBtn = document.getElementById("catBtn");
+          const catMenu = document.getElementById("catMenu");
+          const catMenuInner = document.getElementById("catMenuInner");
+          const catLabel = document.getElementById("catLabel");
+          const categoryValue = document.getElementById("categoryValue");
+
+          function renderCatMenu() {
+            catMenuInner.innerHTML = categories.map(c => `
+              <button type="button" class="menu-item w-full text-left" data-cat="${c}">
+                ${c}
+              </button>
+            `).join("");
+
+            catMenuInner.querySelectorAll("[data-cat]").forEach(btn => {
+              btn.addEventListener("click", () => {
+                const c = btn.getAttribute("data-cat");
+                categoryValue.value = c;
+                catLabel.textContent = c;
+                catLabel.className = "text-white";
+
+                catMenuInner.querySelectorAll(".menu-item").forEach(x => x.classList.remove("active"));
+                btn.classList.add("active");
+
+                closeCatMenu();
+              });
+            });
+          }
+          renderCatMenu();
+
+          function openCatMenu() {
+            const r = catBtn.getBoundingClientRect();
+            catMenu.style.width = r.width + "px";
+            catMenu.style.left = r.left + "px";
+            catMenu.style.top = (r.bottom + 8) + "px";
+            catMenu.classList.add("open");
+            catMenu.setAttribute("aria-hidden", "false");
+          }
+
+          function closeCatMenu() {
+            catMenu.classList.remove("open");
+            catMenu.setAttribute("aria-hidden", "true");
+          }
+
+          catBtn.addEventListener("click", (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            if (catMenu.classList.contains("open")) closeCatMenu();
+            else openCatMenu();
+          });
+
+          window.addEventListener("scroll", () => {
+            if (catMenu.classList.contains("open")) openCatMenu();
+          }, { passive: true });
+
+          window.addEventListener("resize", () => {
+            if (catMenu.classList.contains("open")) openCatMenu();
+          });
+
+          document.addEventListener("click", (e) => {
+            if (e.target === catBtn || catBtn.contains(e.target)) return;
+            if (e.target === catMenu || catMenu.contains(e.target)) return;
+            closeCatMenu();
+          });
+
+          document.addEventListener("keydown", (e) => {
+            if (e.key === "Escape") closeCatMenu();
+          });
+
+          const logoInput = document.getElementById("logoInput");
+          const logoPreview = document.getElementById("logoPreview");
+          const logoFallback = document.getElementById("logoFallback");
+          let logoObjectUrl = null;
+
+          logoInput.addEventListener("change", () => {
+            const f = logoInput.files && logoInput.files[0];
+            if (!f) {
+              if (logoObjectUrl) URL.revokeObjectURL(logoObjectUrl);
+              logoObjectUrl = null;
+              logoPreview.classList.add("hidden");
+              logoFallback.classList.remove("hidden");
+              return;
+            }
+            if (logoObjectUrl) URL.revokeObjectURL(logoObjectUrl);
+            logoObjectUrl = URL.createObjectURL(f);
+            logoPreview.src = logoObjectUrl;
+            logoPreview.classList.remove("hidden");
+            logoFallback.classList.add("hidden");
+          });
+
+          document.getElementById("copyKey").addEventListener("click", async () => {
+        const btn = document.getElementById("copyKey");
+        const v = lastCreatedEditKey || "";
+
+        if (!v) {
+          alert("No edit key to copy.");
+          return;
+        }
+
+        try {
+          await navigator.clipboard.writeText(v);
+          btn.textContent = "Copied";
+          setTimeout(() => {
+            btn.textContent = "Copy";
+          }, 1200);
+        } catch (_) {
+          const temp = document.createElement("textarea");
+          temp.value = v;
+          document.body.appendChild(temp);
+          temp.select();
+          document.execCommand("copy");
+          document.body.removeChild(temp);
+
+          btn.textContent = "Copied";
+          setTimeout(() => {
+            btn.textContent = "Copy";
+          }, 1200);
+        }
+      });
+
+          document.getElementById("form").addEventListener("submit", async (e) => {
+            e.preventDefault();
+
+            const msg = document.getElementById("msg");
+            const btn = document.getElementById("btn");
+            const after = document.getElementById("after");
+
+            msg.textContent = "Submitting...";
+            msg.style.color = "rgba(255,255,255,0.70)";
+            after.classList.add("hidden");
+            walletAfterBlock.classList.add("hidden");
+            keyAfterBlock.classList.add("hidden");
+            lastCreatedEditKey = "";
+      const editKeyEl = document.getElementById("editKeyOut");
+      if (editKeyEl) editKeyEl.textContent = "";
+
+            btn.disabled = true;
+            btn.classList.add("opacity-70");
+
+            try {
+              const form = new FormData(e.target);
+
+              const name = (form.get("name") || "").trim();
+              if (!name) throw new Error("Project name is required.");
+
+              const category = (categoryValue.value || "").trim();
+              if (!category) throw new Error("Category is required.");
+
+              const website = normalizeUrl(form.get("website"));
+              const twitter = normalizeUrl(form.get("twitter"));
+              const github = normalizeUrl(form.get("github"));
+              const discord = normalizeUrl(form.get("discord"));
+
+              if(!website && !twitter && !github && !discord){
+                throw new Error("Please add at least ONE link (Website, Twitter, GitHub, or Discord).");
+              }
+
+              const useWalletAuth = !!connectedAddress;
+              const baseSlug = slugify(name);
+              const slug = await makeUniqueSlug(baseSlug);
+              const edit_key = useWalletAuth ? null : randomEditKey();
+
+              let logo_url = null;
+              const logoFile = form.get("logo");
+
+              if (logoFile && logoFile instanceof File && logoFile.size > 0) {
+                const ext = (logoFile.name.split(".").pop() || "png").toLowerCase();
+                const path = `logos/${slug}-${Date.now()}.${ext}`;
+
+                const { error: uploadError } = await sb.storage
+                  .from("project-logos")
+                  .upload(path, logoFile, { cacheControl: "3600", upsert: false });
+
+                if (uploadError) throw uploadError;
+
+                const { data } = sb.storage.from("project-logos").getPublicUrl(path);
+                logo_url = data.publicUrl;
+              }
+
+              const payload = {
         name,
-        slug: slugify(name),
-        short_description: (fd.get("short_description") || "").trim(),
-        description: (fd.get("description") || "").trim(),
-        category: fd.get("category"),
-        tags: (fd.get("tags") || "")
-          .split(",")
-          .map(t => t.trim())
-          .filter(Boolean),
-        website: (fd.get("website") || "").trim() || null,
-        github: (fd.get("github") || "").trim() || null,
-        twitter: (fd.get("twitter") || "").trim() || null,
-        discord: (fd.get("discord") || "").trim() || null,
-        status: "pending"
+        slug,
+        edit_key,
+        submitter_wallet: connectedAddress || null,
+        wallet_connected: !!connectedAddress,
+        short_description: (form.get("short_description") || "").trim(),
+        category,
+        website: website || null,
+        twitter: twitter || null,
+        github: github || null,
+        discord: discord || null,
+        logo_url,
+        status: "pending",
       };
 
-      try {
-        const { error } = await supabase.from("projects").insert([payload]);
-        if (error) throw error;
-        msg.textContent = "Submitted! Your project is pending approval.";
-        form.reset();
-      } catch (err) {
-        msg.textContent = err.message || "Failed to submit.";
-      } finally {
-        btn.disabled = false;
-        btn.classList.remove("opacity-60");
+              const { error } = await sb.from("projects").insert(payload);
+      if (error) throw error;
+
+      msg.textContent = "✅ Submitted! Your project is pending approval.";
+      msg.style.color = "var(--ok)";
+
+      // reset the main form first
+      e.target.reset();
+
+      categoryValue.value = "";
+      catLabel.textContent = "Select category";
+      catLabel.className = "text-white/70";
+      catMenuInner.querySelectorAll(".menu-item").forEach(x => x.classList.remove("active"));
+      closeCatMenu();
+
+      if (logoObjectUrl) URL.revokeObjectURL(logoObjectUrl);
+      logoObjectUrl = null;
+      logoPreview.classList.add("hidden");
+      logoFallback.classList.remove("hidden");
+
+      // now show success blocks AFTER reset
+      after.classList.remove("hidden");
+
+      if (useWalletAuth) {
+        if (walletAfterBlock) walletAfterBlock.classList.remove("hidden");
+        if (walletOut) walletOut.textContent = connectedAddress || "";
+        if (walletUpdateLink) {
+          walletUpdateLink.href = `update.html?slug=${encodeURIComponent(slug)}`;
+        }
+      } else {
+        if (keyAfterBlock) keyAfterBlock.classList.remove("hidden");
+
+        const editKeyEl = document.getElementById("editKeyOut");
+        const updateEl = document.getElementById("updateLink");
+
+        lastCreatedEditKey = edit_key || "";
+
+        if (editKeyEl) {
+          editKeyEl.textContent = lastCreatedEditKey;
+        }
+
+        if (updateEl) {
+          updateEl.href = `update.html?slug=${encodeURIComponent(slug)}&edit_key=${encodeURIComponent(lastCreatedEditKey)}`;
+        }
       }
-    });
-  </script>
-</body>
+
+              e.target.reset();
+
+              categoryValue.value = "";
+              catLabel.textContent = "Select category";
+              catLabel.className = "text-white/70";
+              catMenuInner.querySelectorAll(".menu-item").forEach(x => x.classList.remove("active"));
+              closeCatMenu();
+
+              if (logoObjectUrl) URL.revokeObjectURL(logoObjectUrl);
+              logoObjectUrl = null;
+              logoPreview.classList.add("hidden");
+              logoFallback.classList.remove("hidden");
+
+            } catch (err) {
+              msg.textContent = `❌ ${err?.message || "Failed to submit."}`;
+              msg.style.color = "var(--danger)";
+            } finally {
+              btn.disabled = false;
+              btn.classList.remove("opacity-70");
+            }
+          });
+
+          tryAutoReconnect();
+          updateWalletModeUI();
+    </script>
+  </body>
 </html>

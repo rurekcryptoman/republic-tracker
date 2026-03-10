@@ -1,0 +1,677 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Project — Republic Tracker</title>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <style>
+    :root{
+      --bg0:#06060a;
+      --bg1:#070a10;
+      --card: rgba(255,255,255,0.06);
+      --border: rgba(255,255,255,0.15);
+      --text:#ffffff;
+      --muted: rgba(255,255,255,0.85);
+      --muted2: rgba(255,255,255,0.65);
+      --neon:#3DFF8C;
+      --neon2:#18C964;
+      --danger:#ff6b6b;
+      --ok:#39d98a;
+    }
+
+    html,body{height:100%}
+
+    body{
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(900px 520px at 70% 10%, rgba(61,255,140,0.12), transparent 55%),
+        radial-gradient(900px 520px at 20% 25%, rgba(24,201,100,0.10), transparent 60%),
+        radial-gradient(900px 520px at 50% 95%, rgba(61,255,140,0.08), transparent 60%),
+        linear-gradient(180deg, var(--bg0), var(--bg1) 70%, var(--bg0));
+      background-attachment: fixed;
+      overflow-x:hidden;
+      position: relative;
+    }
+
+    body::before{
+      content:"";
+      position:fixed;
+      inset:-40%;
+      z-index:-1;
+      pointer-events:none;
+      background:
+        radial-gradient(circle at 20% 30%, rgba(61,255,140,0.15), transparent 35%),
+        radial-gradient(circle at 80% 70%, rgba(24,201,100,0.12), transparent 40%);
+      filter: blur(120px);
+      animation: glowMove 18s linear infinite;
+    }
+
+    @keyframes glowMove{
+      0%{ transform: translate(0,0); }
+      50%{ transform: translate(-8%,6%); }
+      100%{ transform: translate(0,0); }
+    }
+
+    .glass{
+      background: var(--card);
+      border:1px solid var(--border);
+      backdrop-filter: blur(10px);
+      box-shadow:0 18px 60px rgba(0,0,0,0.55);
+      transition: transform .18s, border-color .18s, box-shadow .18s, background .18s;
+    }
+
+    .glass:hover{
+      border-color: rgba(61,255,140,0.20);
+      box-shadow:
+        0 0 18px rgba(61,255,140,0.07),
+        0 18px 60px rgba(0,0,0,0.58);
+    }
+
+    .label{
+      font-size:12px;
+      letter-spacing:.12em;
+      text-transform:uppercase;
+      color:var(--muted);
+      font-weight:600;
+    }
+
+    .hint{
+      font-size:12px;
+      color:var(--muted2);
+    }
+
+    .pill{
+      border:1px solid rgba(255,255,255,0.15);
+      background:rgba(255,255,255,0.05);
+      color: rgba(255,255,255,0.92);
+    }
+
+    .btn{
+      background:linear-gradient(90deg,#3DFF8C,#18C964);
+      color:#000;
+      border:1px solid rgba(255,255,255,0.12);
+      box-shadow:0 8px 30px rgba(61,255,140,0.16);
+      transition:.18s ease;
+    }
+
+    .btn:hover{
+      filter:brightness(1.08);
+      box-shadow:
+        0 0 14px rgba(61,255,140,0.22),
+        0 10px 35px rgba(61,255,140,0.25);
+      transform: translateY(-1px);
+    }
+
+    .btn:active{
+      transform: translateY(1px);
+    }
+
+    .brand-logo-icon{
+      height: 96px;
+      width: 96px;
+      object-fit: contain;
+      border-radius: 20px;
+      flex-shrink: 0;
+      filter:
+        drop-shadow(0 0 10px rgba(61,255,140,0.35))
+        drop-shadow(0 0 24px rgba(61,255,140,0.25))
+        drop-shadow(0 0 40px rgba(61,255,140,0.15));
+      animation: logoPulse 4s ease-in-out infinite;
+    }
+
+    @keyframes logoPulse{
+      0%{
+        transform: scale(1);
+        filter:
+          drop-shadow(0 0 10px rgba(61,255,140,0.28))
+          drop-shadow(0 0 24px rgba(61,255,140,0.18))
+          drop-shadow(0 0 40px rgba(61,255,140,0.10));
+      }
+      50%{
+        transform: scale(1.03);
+        filter:
+          drop-shadow(0 0 14px rgba(61,255,140,0.40))
+          drop-shadow(0 0 30px rgba(61,255,140,0.26))
+          drop-shadow(0 0 48px rgba(61,255,140,0.16));
+      }
+      100%{
+        transform: scale(1);
+        filter:
+          drop-shadow(0 0 10px rgba(61,255,140,0.28))
+          drop-shadow(0 0 24px rgba(61,255,140,0.18))
+          drop-shadow(0 0 40px rgba(61,255,140,0.10));
+      }
+    }
+
+    .brand-title{
+      color:#ffffff;
+      letter-spacing:-0.02em;
+      text-shadow:
+        0 0 8px rgba(255,255,255,0.10),
+        0 0 22px rgba(61,255,140,0.14);
+    }
+
+    .brand-subtitle{
+      color: rgba(255,255,255,0.68);
+      letter-spacing: .06em;
+    }
+
+    .nav-link-pro{
+      color: rgba(255,255,255,0.84);
+      transition: all .18s ease;
+    }
+
+    .nav-link-pro:hover{
+      color: #ffffff;
+      background: rgba(255,255,255,0.05);
+      box-shadow: 0 0 12px rgba(61,255,140,0.06);
+    }
+
+    .glow-title{
+      text-shadow:
+        0 0 4px rgba(61,255,140,0.45),
+        0 0 10px rgba(61,255,140,0.28);
+    }
+
+    .logo-wrap{
+      background: rgba(0,0,0,0.35);
+      border: 1px solid rgba(255,255,255,0.12);
+    }
+
+    .tag-pill{
+      border:1px solid rgba(255,255,255,0.14);
+      background:rgba(255,255,255,0.05);
+      color:rgba(255,255,255,0.92);
+    }
+
+    .external-link{
+      color: rgba(255,255,255,0.88);
+      text-decoration: underline;
+      text-underline-offset: 3px;
+      transition: color .16s ease;
+    }
+
+    .external-link:hover{
+      color: var(--neon);
+    }
+
+    .muted-text{
+      color: var(--muted);
+    }
+
+    .wallet-menu{
+      position: fixed;
+      z-index: 1000000;
+      min-width: 220px;
+      display: none;
+      background: rgba(10,12,16,0.96);
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 14px;
+      backdrop-filter: blur(12px);
+      box-shadow:
+        0 0 20px rgba(61,255,140,0.08),
+        0 22px 70px rgba(0,0,0,0.65);
+      overflow: hidden;
+    }
+
+    .wallet-menu.open{
+      display:block;
+    }
+
+    .wallet-item{
+      width:100%;
+      text-align:left;
+      padding:12px 14px;
+      font-size:14px;
+      color:rgba(255,255,255,0.92);
+      background:transparent;
+      border-top:1px solid rgba(255,255,255,0.06);
+      transition: background .16s ease;
+    }
+
+    .wallet-item:hover{
+      background:rgba(61,255,140,0.12);
+    }
+
+    .wallet-head{
+      padding:12px 14px;
+      font-size:12px;
+      color:var(--muted2);
+      background:rgba(255,255,255,0.03);
+    }
+
+    @media (max-width: 640px){
+      .brand-logo-icon{
+        height:70px;
+        width:70px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="max-w-6xl mx-auto px-4 py-6">
+
+    <header class="flex items-center justify-between py-2">
+      <div class="flex items-center gap-4">
+        <img
+          src="logo-icon.png"
+          alt="Republic Tracker logo"
+          class="brand-logo-icon"
+        />
+
+        <div class="leading-tight">
+          <div class="brand-title text-2xl md:text-3xl font-extrabold tracking-tight">
+            Republic Tracker
+          </div>
+          <div class="brand-subtitle text-[11px] md:text-xs font-medium uppercase mt-1">
+            Republic Ecosystem Intelligence
+          </div>
+        </div>
+      </div>
+
+      <nav class="flex items-center gap-2 md:gap-3 text-sm">
+        <a href="home.html" class="nav-link-pro rounded-xl px-4 py-2.5 font-medium">
+          Dashboard
+        </a>
+
+        <a href="index.html" class="nav-link-pro rounded-xl px-4 py-2.5 font-medium">
+          Projects
+        </a>
+
+        <a href="submit.html" class="nav-link-pro rounded-xl px-4 py-2.5 font-medium">
+          Submit
+        </a>
+
+        <button id="connectBtn" class="btn rounded-xl px-5 py-2.5 text-sm font-semibold">
+          Connect Wallet
+        </button>
+      </nav>
+    </header>
+
+    <section class="mt-6 glass rounded-2xl p-6 md:p-8">
+      <div class="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
+        <div>
+          <div class="label">Project</div>
+          <h1 class="mt-2 text-xl md:text-2xl font-bold tracking-tight glow-title">
+            Explore project details
+          </h1>
+          <p class="mt-2 text-sm md:text-base" style="color: var(--muted); max-width: 70ch;">
+            View links, Description, Category, and Ecosystem context for an approved Republic project.
+          </p>
+        </div>
+
+        <div class="flex items-center gap-3">
+          <a href="index.html" class="pill rounded-xl px-4 py-3 text-sm hover:bg-white/10 transition">
+            ← Back to projects
+          </a>
+
+          <a href="submit.html" class="btn rounded-xl px-4 py-3 text-sm font-semibold text-center">
+            + Submit a project
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <section class="mt-6">
+      <div id="content" class="glass rounded-2xl p-6 md:p-8">
+        <div class="text-sm" style="color: var(--muted);">Loading project…</div>
+      </div>
+    </section>
+
+    <footer class="mt-10 pb-10 text-xs" style="color: var(--muted2);">
+      Built with Supabase + static HTML. Approved projects only.
+    </footer>
+  </div>
+
+  <div id="walletMenu" class="wallet-menu" aria-hidden="true">
+    <div class="wallet-head">
+      Connected wallet
+      <div id="walletMenuAddress" class="mt-1 text-white text-sm break-all"></div>
+    </div>
+    <button id="copyWalletBtn" type="button" class="wallet-item">Copy address</button>
+    <button id="disconnectWalletBtn" type="button" class="wallet-item">Disconnect wallet</button>
+  </div>
+
+  <script>
+    const CHAIN_ID = "raitestnet_77701-1";
+    const WALLET_STORAGE_KEY = "republic_tracker_wallet_address";
+
+    const connectBtn = document.getElementById("connectBtn");
+    const walletMenu = document.getElementById("walletMenu");
+    const walletMenuAddress = document.getElementById("walletMenuAddress");
+    const copyWalletBtn = document.getElementById("copyWalletBtn");
+    const disconnectWalletBtn = document.getElementById("disconnectWalletBtn");
+
+    let connectedAddress = null;
+    let walletWatcherAttached = false;
+
+    function shortAddress(address = ""){
+      if (!address) return "Connect Wallet";
+      return `${address.slice(0,6)}...${address.slice(-4)}`;
+    }
+
+    function saveWalletAddress(address){
+      if (!address) {
+        localStorage.removeItem(WALLET_STORAGE_KEY);
+        return;
+      }
+      localStorage.setItem(WALLET_STORAGE_KEY, address);
+    }
+
+    function getSavedWalletAddress(){
+      return localStorage.getItem(WALLET_STORAGE_KEY) || "";
+    }
+
+    function setWalletConnectedUI(address){
+      connectedAddress = address;
+      connectBtn.textContent = shortAddress(address);
+      walletMenuAddress.textContent = address;
+      saveWalletAddress(address);
+    }
+
+    function setWalletDisconnectedUI(){
+      connectedAddress = null;
+      connectBtn.textContent = "Connect Wallet";
+      walletMenuAddress.textContent = "";
+      saveWalletAddress("");
+      closeWalletMenu();
+    }
+
+    async function getCurrentKeplrAddress(){
+      if(!window.keplr) return "";
+      const signer = window.getOfflineSigner(CHAIN_ID);
+      const accounts = await signer.getAccounts();
+      return accounts?.[0]?.address || "";
+    }
+
+    async function connectWallet(){
+      if(!window.keplr){
+        alert("Install Keplr wallet");
+        window.open("https://www.keplr.app/","_blank");
+        return;
+      }
+
+      try{
+        await window.keplr.enable(CHAIN_ID);
+        const address = await getCurrentKeplrAddress();
+
+        if(!address){
+          throw new Error("No wallet address found.");
+        }
+
+        setWalletConnectedUI(address);
+        attachWalletWatcher();
+      }catch(e){
+        alert("Wallet connection failed");
+      }
+    }
+
+    function disconnectWallet(){
+      setWalletDisconnectedUI();
+    }
+
+    async function tryAutoReconnect(){
+      const saved = getSavedWalletAddress();
+      if(!saved || !window.keplr) return;
+
+      try{
+        await window.keplr.enable(CHAIN_ID);
+        const current = await getCurrentKeplrAddress();
+
+        if(!current) {
+          setWalletDisconnectedUI();
+          return;
+        }
+
+        if(current !== saved){
+          setWalletDisconnectedUI();
+          alert("Connected wallet has changed. Please reconnect your wallet again.");
+          return;
+        }
+
+        setWalletConnectedUI(current);
+        attachWalletWatcher();
+      }catch(_){
+        setWalletDisconnectedUI();
+      }
+    }
+
+    function openWalletMenu(){
+      if(!connectedAddress) return;
+      const rect = connectBtn.getBoundingClientRect();
+      walletMenu.style.left = `${rect.left}px`;
+      walletMenu.style.top = `${rect.bottom + 8}px`;
+      walletMenu.classList.add("open");
+      walletMenu.setAttribute("aria-hidden", "false");
+    }
+
+    function closeWalletMenu(){
+      walletMenu.classList.remove("open");
+      walletMenu.setAttribute("aria-hidden", "true");
+    }
+
+    async function handleWalletButtonClick(e){
+      e.stopPropagation();
+
+      if(!connectedAddress){
+        await connectWallet();
+        return;
+      }
+
+      if(walletMenu.classList.contains("open")) closeWalletMenu();
+      else openWalletMenu();
+    }
+
+    async function copyWalletAddress(){
+      if(!connectedAddress) return;
+
+      try{
+        await navigator.clipboard.writeText(connectedAddress);
+      }catch(_){
+        alert("Could not copy wallet address.");
+      }
+      closeWalletMenu();
+    }
+
+    function attachWalletWatcher(){
+      if(walletWatcherAttached || !window.keplr) return;
+
+      window.addEventListener("keplr_keystorechange", async () => {
+        if(!connectedAddress) return;
+
+        try{
+          const current = await getCurrentKeplrAddress();
+
+          if(!current || current !== connectedAddress){
+            const oldAddress = connectedAddress;
+            setWalletDisconnectedUI();
+            if(oldAddress){
+              alert("Connected wallet has changed. Please reconnect your wallet again.");
+            }
+          }
+        }catch(_){
+          setWalletDisconnectedUI();
+          alert("Wallet state changed. Please reconnect your wallet again.");
+        }
+      });
+
+      walletWatcherAttached = true;
+    }
+
+    connectBtn.addEventListener("click", handleWalletButtonClick);
+    copyWalletBtn.addEventListener("click", copyWalletAddress);
+    disconnectWalletBtn.addEventListener("click", disconnectWallet);
+
+    window.addEventListener("resize", () => {
+      if(walletMenu.classList.contains("open")) openWalletMenu();
+    });
+
+    window.addEventListener("scroll", () => {
+      if(walletMenu.classList.contains("open")) openWalletMenu();
+    }, true);
+
+    document.addEventListener("click", (e) => {
+      if(walletMenu.classList.contains("open") && !walletMenu.contains(e.target) && !connectBtn.contains(e.target)){
+        closeWalletMenu();
+      }
+    });
+
+    const SUPABASE_URL = "https://ozafpxboemvvkotwgxoy.supabase.co";
+    const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_h-9NYJmjFh8oeMmlK6kPhA_L5zQZRKT";
+
+    const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
+    const content = document.getElementById("content");
+
+    function escapeHtml(str = "") {
+      return String(str).replace(/[&<>"']/g, (m) => ({
+        "&": "&amp;",
+        "<": "&lt;",
+        ">": "&gt;",
+        '"': "&quot;",
+        "'": "&#39;",
+      }[m]));
+    }
+
+    function safeUrl(u) {
+      if (!u) return "";
+      const s = String(u).trim();
+      if (!/^https?:\/\//i.test(s)) return "";
+      return s;
+    }
+
+    function link(label, url) {
+      const href = safeUrl(url);
+      if (!href) return "";
+      return `<a class="external-link text-sm" href="${href}" target="_blank" rel="noreferrer">${label}</a>`;
+    }
+
+    function getSlug() {
+      const params = new URLSearchParams(window.location.search);
+      return params.get("slug");
+    }
+
+    function shouldCountView(slug) {
+      const key = `viewed:${slug}`;
+      const last = Number(localStorage.getItem(key) || "0");
+      const now = Date.now();
+      if (now - last < 30 * 60 * 1000) return false;
+      localStorage.setItem(key, String(now));
+      return true;
+    }
+
+    async function trackView(slug) {
+      try {
+        if (!slug) return;
+        if (!shouldCountView(slug)) return;
+        await sb.from("project_views").insert({ slug });
+      } catch (e) {
+      }
+    }
+
+    async function loadProject() {
+      const slug = getSlug();
+
+      if (!slug) {
+        content.innerHTML = `<div class="text-sm" style="color: var(--danger);">Missing slug in URL.</div>`;
+        return;
+      }
+
+      trackView(slug);
+
+      const { data, error } = await sb
+        .from("projects")
+        .select("*")
+        .eq("slug", slug)
+        .eq("status", "approved")
+        .maybeSingle();
+
+      if (error) {
+        content.innerHTML = `<pre class="text-xs whitespace-pre-wrap" style="color: var(--danger);">${escapeHtml(error.message)}</pre>`;
+        return;
+      }
+
+      if (!data) {
+        content.innerHTML = `<div class="text-sm" style="color: var(--muted);">Project not found.</div>`;
+        return;
+      }
+
+      const logo = safeUrl(data.logo_url) || "https://placehold.co/80x80?text=R";
+      const tags = (data.tags || []).map(t =>
+        `<span class="tag-pill rounded-full px-3 py-1 text-xs">${escapeHtml(t)}</span>`
+      ).join("");
+
+      const links = [
+        link("Website", data.website),
+        link("GitHub", data.github),
+        link("Twitter", data.twitter),
+        link("Discord", data.discord),
+      ].filter(Boolean).join(" · ");
+
+      content.innerHTML = `
+        <div class="flex flex-col gap-6">
+          <div class="flex items-start gap-5">
+            <div class="logo-wrap rounded-2xl w-20 h-20 overflow-hidden grid place-items-center shrink-0">
+              <img src="${logo}" class="w-full h-full object-cover" alt="">
+            </div>
+
+            <div class="min-w-0 flex-1">
+              <div class="text-xs uppercase tracking-[0.12em]" style="color: var(--muted2);">
+                ${escapeHtml(data.category || "Uncategorized")}
+              </div>
+
+              <h1 class="mt-2 text-3xl md:text-4xl font-extrabold tracking-tight glow-title">
+                ${escapeHtml(data.name || "")}
+              </h1>
+
+              <p class="mt-3 text-sm md:text-base muted-text">
+                ${escapeHtml(data.short_description || "")}
+              </p>
+
+              ${links ? `<div class="mt-4 flex flex-wrap gap-3">${links}</div>` : ""}
+              ${tags ? `<div class="mt-5 flex flex-wrap gap-2">${tags}</div>` : ""}
+            </div>
+          </div>
+
+          ${data.description ? `
+            <div class="glass rounded-2xl p-5 md:p-6">
+              <div class="label">About</div>
+              <p class="mt-3 text-sm md:text-base muted-text whitespace-pre-wrap">${escapeHtml(data.description)}</p>
+            </div>
+          ` : ""}
+
+          <div class="glass rounded-2xl p-5 md:p-6">
+            <div class="label">Project metadata</div>
+
+            <div class="mt-4 grid gap-4 md:grid-cols-2">
+              <div>
+                <div class="hint">Category</div>
+                <div class="mt-1 text-sm font-medium">${escapeHtml(data.category || "Uncategorized")}</div>
+              </div>
+
+              <div>
+                <div class="hint">Published</div>
+                <div class="mt-1 text-sm font-medium">
+                  ${data.created_at ? new Date(data.created_at).toLocaleDateString() : "—"}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    tryAutoReconnect();
+    loadProject();
+  </script>
+</body>
+</html>
